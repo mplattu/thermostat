@@ -10,7 +10,7 @@ from ESPCommander import ESPCommander
 logger = Logger()
 settings = Settings()
 
-room_temp_meter = TemperatureMeter(settings.get_environ('THERMOSTAT_OWFS_ROOT', True), settings.get_environ('THERMOSTAT_OWFS_OVERRIDE'))
+room_temp_meter = TemperatureMeter(settings.get_cmdline('owfs_root', True), settings.get_environ('THERMOSTAT_OWFS_OVERRIDE'))
 room_temp = room_temp_meter.get_temperature()
 if room_temp != None:
     logger.print('Room temperature: %.2f' % room_temp)
