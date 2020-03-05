@@ -2,8 +2,12 @@ import os
 import os.path
 import re
 
+from Logger import Logger
+
 class TemperatureMeter:
     def __init__(self, owfs_path, owfs_override):
+        self.logger = Logger()
+
         self.owfs_path = owfs_path
         self.temperature_types = ['DS18S20']
 
@@ -48,7 +52,7 @@ class TemperatureMeter:
         for this_file in self.temperature_files:
             with open(this_file, 'r') as f:
                 temperature = f.read()
-                print("Measure %s: %s" % (this_file, temperature))
+                self.logger.print("Measure %s: %s" % (this_file, temperature))
             temperatures.append(float(temperature))
 
         return sum(temperatures)/len(temperatures)
