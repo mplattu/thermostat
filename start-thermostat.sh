@@ -12,5 +12,5 @@ while [ 1 != 2 ]
 do
   ./thermostat.py --owfs /tmp/owfs >>/var/log/thermostat.log
   echo "start-thermostat.sh executed"
-  sleep 1800
+  sleep $THERMOSTAT_DELAY_BETWEEN
 done
