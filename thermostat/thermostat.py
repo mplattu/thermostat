@@ -10,6 +10,16 @@ from ESPCommander import ESPCommander
 logger = Logger()
 settings = Settings()
 
+# Check for forced relay position
+forced_relay_position = None
+if settings.get_environ('THERMOSTAT_FORCE_ON') != "":
+    forced_relay_position = True
+    logger.print('Thermostat forced ON by environment variable')
+
+if settings.get_environ('THERMOSTAT_FORCE_OFF') != "":
+    forced_relay_position = False
+    logger.print('Thermostat forced OFF by environment variable')
+
 room_temp_meter = TemperatureMeter(settings.get_cmdline('owfs_root', True), settings.get_environ('THERMOSTAT_OWFS_OVERRIDE'))
 room_temp = room_temp_meter.get_temperature()
 if room_temp != None:
@@ -35,7 +45,15 @@ esp_commander = ESPCommander(
 )
 
 relay_status = 'n/a'
-if (target_temp < room_temp):
+if (forced_relay_position == True):
+    # Forced on
+    esp_commander.relay_on()
+    relay_status = 'ON (Forced)'
+elif (forced_relay_position == False):
+    # Forced off
+    esp_commander.relay_off()
+    relay_status = 'OFF (Forced)'
+elif (target_temp < room_temp):
     # Too warm inside
     esp_commander.relay_off()
     relay_status = 'OFF'
