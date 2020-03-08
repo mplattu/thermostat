@@ -1,4 +1,5 @@
 import datetime
+import sys
 
 class Logger:
     def message(self, message):
@@ -8,4 +9,8 @@ class Logger:
         return '{0:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
 
     def print(self, message):
-        print(self.message(message))
+        print(message)
+        self.debug(message)
+
+    def debug(self, message):
+        print(self.message(message), file=sys.stderr)

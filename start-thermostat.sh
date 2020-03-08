@@ -10,7 +10,7 @@ cd /srv/thermostat/thermostat
 # Loop forever
 while [ 1 != 2 ]
 do
-  ./thermostat.py --owfs /tmp/owfs >>/var/log/thermostat.log
+  ./thermostat.py --owfs /tmp/owfs 2>>/var/log/thermostat.log
   echo "start-thermostat.sh executed"
   sleep $THERMOSTAT_DELAY_BETWEEN
 done

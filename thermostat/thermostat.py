@@ -14,35 +14,37 @@ settings = Settings()
 forced_relay_position = None
 if settings.get_environ('THERMOSTAT_FORCE_ON') != "":
     forced_relay_position = True
-    logger.print('Thermostat forced ON by environment variable')
+    logger.debug('Thermostat forced ON by environment variable')
 
 if settings.get_environ('THERMOSTAT_FORCE_OFF') != "":
     forced_relay_position = False
-    logger.print('Thermostat forced OFF by environment variable')
+    logger.debug('Thermostat forced OFF by environment variable')
 
 room_temp_meter = TemperatureMeter(settings.get_cmdline('owfs_root', True), settings.get_environ('THERMOSTAT_OWFS_OVERRIDE'))
 room_temp = room_temp_meter.get_temperature()
 if room_temp != None:
-    logger.print('Room temperature: %.2f' % room_temp)
+    logger.debug('Room temperature: %.2f' % room_temp)
 else:
     logger.print('Did not get room temperature')
 
 outdoor_temp_meter = TemperatureFMI(settings.get_environ('THERMOSTAT_FMI_URL', True))
 outdoor_temp = outdoor_temp_meter.get_temperature()
 if outdoor_temp != None:
-    logger.print('Outdoor temperature: %.2f' % outdoor_temp)
+    logger.debug('Outdoor temperature: %.2f' % outdoor_temp)
 else:
     logger.print('Did not get outdoor temperature')
 
 temp_diff = float(settings.get_environ('THERMOSTAT_TEMP_DIFF', True))
 target_temp = outdoor_temp + temp_diff
-logger.print('Target temperature: %.2f' % target_temp)
+logger.debug('Target temperature: %.2f' % target_temp)
 
 esp_commander = ESPCommander(
     settings.get_environ('THERMOSTAT_DEVICE', True),
     settings.get_environ('THERMOSTAT_DEVICE_PASSWORD', True),
     settings.get_environ('THERMOSTAT_DEVICE_KEY', True)
 )
+
+esp_commander.set_test_mode(settings.get_cmdline('test_mode'))
 
 relay_status = 'n/a'
 if (forced_relay_position == True):
@@ -62,6 +64,6 @@ else:
     esp_commander.relay_on()
     relay_status = 'ON'
 
-logger.print(relay_status)
+logger.debug(relay_status)
 
-print('CSV\t%s\t%.2f\t%.2f\t%.2f\t%s' % (logger.get_timestamp(), room_temp, outdoor_temp, target_temp, relay_status))
+logger.print('CSV\t%s\t%.2f\t%.2f\t%.2f\t%s' % (logger.get_timestamp(), room_temp, outdoor_temp, target_temp, relay_status))
