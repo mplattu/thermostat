@@ -11,7 +11,11 @@ class TemperatureMeter:
         self.owfs_path = owfs_path
         self.temperature_types = ['DS18S20']
 
-        self.owfs_overrides = owfs_override.split(',')
+        if owfs_override:
+            self.owfs_overrides = owfs_override.split(',')
+        else:
+            self.owfs_overrides = []
+
         self.temperature_files = self.scan_temp_files()
 
     def scan_temp_files(self):
