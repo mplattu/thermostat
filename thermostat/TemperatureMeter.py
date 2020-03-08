@@ -56,7 +56,7 @@ class TemperatureMeter:
         for this_file in self.temperature_files:
             with open(this_file, 'r') as f:
                 temperature = f.read()
-                self.logger.print("Measure %s: %s" % (this_file, temperature))
+                self.logger.debug("Measure %s: %s" % (this_file, temperature))
             temperatures.append(float(temperature))
 
         return sum(temperatures)/len(temperatures)

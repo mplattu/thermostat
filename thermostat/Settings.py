@@ -17,6 +17,7 @@ class Settings:
             epilog='See also the THERMOSTAT_* environment strings')
 
         parser.add_argument('--owfs', dest='owfs_root', default='/tmp/owfs', help='OWFS-FUSE root path, defaults to /tmp/owfs')
+        parser.add_argument('--test_mode', dest='test_mode', default=False, action='store_true', help='Test mode (does not require relays)')
         args = parser.parse_args()
         self.cmdline_args = vars(args)
 
@@ -30,7 +31,7 @@ class Settings:
                 self.cmdline_args.print_help()
                 sys.exit(1)
             else:
-                self.logger.print("Command line parameter %s is missing" % name)
+                self.logger.debug("Command line parameter %s is missing" % name)
 
         return value
 
@@ -43,6 +44,6 @@ class Settings:
                 self.logger.print("Required environment variable %s is missing - exiting" % name)
                 sys.exit(1)
             else:
-                self.logger.print("Environment variable %s is missing" % name)
+                self.logger.debug("Environment variable %s is missing" % name)
 
         return env_value

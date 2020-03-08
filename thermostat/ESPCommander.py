@@ -10,6 +10,11 @@ class ESPCommander:
         self.key = key
         self.asyncio_loop = None
 
+        self.test_mode = False
+
+    def set_test_mode(self, test_mode):
+        self.test_mode = test_mode
+
     async def relay_set(self, switch_command):
         cli = aioesphomeapi.APIClient(
             eventloop = self.asyncio_loop,
@@ -26,10 +31,10 @@ class ESPCommander:
         key_int = None
         for this_sensor in sensors:
             if this_sensor.object_id == self.key:
-                self.logger.print("Device %s has matching object: %s" % (self.hostname, this_sensor.object_id))
+                self.logger.debug("Device %s has matching object: %s" % (self.hostname, this_sensor.object_id))
                 key_int = this_sensor.key
             else:
-                self.logger.print("Device %s has object: %s" % (self.hostname, this_sensor.object_id))
+                self.logger.debug("Device %s has object: %s" % (self.hostname, this_sensor.object_id))
 
 
         if not key_int:
@@ -39,15 +44,24 @@ class ESPCommander:
         await asyncio.wait_for(cli.switch_command(key_int, switch_command), timeout=10)
         await asyncio.wait_for(cli.disconnect(), timeout=10)
 
-        self.logger.print("Device %s key %s (%d) was set to: %s" % (self.hostname, self.key, key_int, switch_command))
+        self.logger.debug("Device %s key %s (%d) was set to: %s" % (self.hostname, self.key, key_int, switch_command))
         self.asyncio_loop.stop()
 
+    def relay_set_testmode(self, switch_command):
+        self.logger.debug("Device %s key %s was set to: %s (test-mode)" % (self.hostname, self.key, switch_command))
+
     def relay_on(self):
-        self.asyncio_loop = asyncio.new_event_loop()
-        self.asyncio_loop.run_until_complete(self.relay_set(True))
-        self.asyncio_loop.run_forever()
+        if (self.test_mode):
+            self.relay_set_testmode(True)
+        else:
+            self.asyncio_loop = asyncio.new_event_loop()
+            self.asyncio_loop.run_until_complete(self.relay_set(True))
+            self.asyncio_loop.run_forever()
 
     def relay_off(self):
-        self.asyncio_loop = asyncio.new_event_loop()
-        self.asyncio_loop.run_until_complete(self.relay_set(False))
-        self.asyncio_loop.run_forever()
+        if (self.test_mode):
+            self.relay_set_testmode(False)
+        else:
+            self.asyncio_loop = asyncio.new_event_loop()
+            self.asyncio_loop.run_until_complete(self.relay_set(False))
+            self.asyncio_loop.run_forever()
