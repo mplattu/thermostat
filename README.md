@@ -9,6 +9,30 @@ These are the building blocks for the project:
  * Outdoor temperature from Finnish Meteorological Institute
  * WLAN Relay Deltaco Smartplug SH-P01 [reflashed](http://io.sivuduuni.biz/reflashing-deltaco-smartplug-sh-p01-to-work-with-home-assistant/) with ESPhome. The relay can be controlled with ESPhome [REST API](https://esphome.io/web-api/index.html#switch).
 
+## Configuration
+
+The parameters for the script are given as balenaCloud variables which are shown to the
+application as environment vars. Here is a list of variables:
+ * `THERMOSTAT_DELAY_BETWEEN` Delay between execution cycles in seconds. Type: integer
+ * `THERMOSTAT_DEVICE` ESPhome device name (e.g. `relay_4.local`). Type: string
+ * `THERMOSTAT_DEVICE_KEY` Device key (e.g. `relay_4_deltaco_sh-p01`) of the
+   particular input to control. The keys are enumerated to the debug
+   log `/var/log/thermostat.log` after the device is connected. Type: string
+ * `THERMOSTAT_DEVICE_PASSWORD` API password for the device. Type: string
+ * `THERMOSTAT_FMI_URL` URL to the [FMI WFS API](https://en.ilmatieteenlaitos.fi/open-data-manual-fmi-wfs-services)
+   (e.g. [this](http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::multipointcoverage&place=raseborg&parameters=Temperature) - check the nearest municipality and edit parameter `place=xxx`). Type: string
+ * `THERMOSTAT_FORCE_ON` If contains a value (e.g. `yes`) the relay is forced
+   ON/closed to turn the heating on regardless of the temperatures. Type: string
+ * `THERMOSTAT_FORCE_OFF` If contains a value (e.g. `yes`) the relay is forced
+   OFF/open to turn the heating off regardless of the temperatures. Type: string
+ * `THERMOSTAT_OWFS_OVERRIDE` In normal setting all temperature meters in the 1-Wire
+   network are read and their average temperature is used. Devices listed (their 1-Wire
+   IDs, e.g. `10.67C6697351FF,10.67C669735F2C`) here ignore them. Type: comma-separated
+   list of strings
+ * `THERMOSTAT_TEMP_DIFF` The desired temperature difference between outdoor and
+   indoor temperatures. A positive value sets indoor temperature higher than the
+   outdoor temperature. Type: integer
+
 ## Short Balena Local Mode Command Summmary
 
 Start by enabling Local Mode from your device. This can be done in the BalenaCloud Management UI (see [Balena docs](https://www.balena.io/docs/learn/develop/local-mode/)).
