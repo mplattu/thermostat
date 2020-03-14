@@ -3,12 +3,20 @@ from xml.dom.minidom import parseString
 import xml.dom.minidom
 import re
 
+from Logger import Logger
+
 class TemperatureFMI:
     def __init__(self, fmi_url):
         self.fmi_url = fmi_url
+        self.logger = Logger()
 
     def get_temperature(self):
-        contents = urllib.request.urlopen(self.fmi_url).read()
+        try:
+            contents = urllib.request.urlopen(self.fmi_url).read()
+        except:
+            self.logger.print("Could not retrieve FMI page")
+            return None
+
         dom = parseString(contents.decode("utf-8"))
         collection = dom.documentElement
         temperatures = collection.getElementsByTagName("gml:doubleOrNilReasonTupleList")[0]
