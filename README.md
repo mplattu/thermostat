@@ -14,11 +14,15 @@ These are the building blocks for the project:
 The parameters for the script are given as balenaCloud variables which are shown to the
 application as environment vars. Here is a list of variables:
  * `THERMOSTAT_DELAY_BETWEEN` Delay between execution cycles in seconds. Type: integer
- * `THERMOSTAT_DEVICE` ESPhome device name (e.g. `relay_4.local`). Type: string
+ * `THERMOSTAT_DEVICE` ESPhome device name (e.g. `relay_4.local`). Each device must
+   have a key and API password defined. See below. Type: comma-separated
+   list of strings
  * `THERMOSTAT_DEVICE_KEY` Device key (e.g. `relay_4_deltaco_sh-p01`) of the
    particular input to control. The keys are enumerated to the debug
-   log `/var/log/thermostat.log` after the device is connected. Type: string
- * `THERMOSTAT_DEVICE_PASSWORD` API password for the device. Type: string
+   log `/var/log/thermostat.log` after the device is connected. Type: comma-separated
+   list of strings
+ * `THERMOSTAT_DEVICE_PASSWORD` API password for the device. Type: comma-separated
+   list of strings
  * `THERMOSTAT_FMI_URL` URL to the [FMI WFS API](https://en.ilmatieteenlaitos.fi/open-data-manual-fmi-wfs-services)
    (e.g. [this](http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::multipointcoverage&place=raseborg&parameters=Temperature) - check the nearest municipality and edit parameter `place=xxx`). Type: string
  * `THERMOSTAT_FORCE_ON` If contains a value (e.g. `yes`) the relay is forced
@@ -32,6 +36,13 @@ application as environment vars. Here is a list of variables:
  * `THERMOSTAT_TEMP_DIFF` The desired temperature difference between outdoor and
    indoor temperatures. A positive value sets indoor temperature higher than the
    outdoor temperature. Type: integer
+
+Defining devices
+
+ * One device:
+   `THERMOSTAT_DEVICE=relay_1.local THERMOSTAT_DEVICE_KEY=relay1_deltaco_sh-p01 THERMOSTAT_DEVICE_PASSWORD=relay1apipassword`
+ * Two (or more) devices:
+   `THERMOSTAT_DEVICE=relay_1.local,relay_2.local THERMOSTAT_DEVICE_KEY=relay1_deltaco_sh-p01,relay2_deltaco_sh-p01 THERMOSTAT_DEVICE_PASSWORD=relay1apipassword,relay2apipassword`
 
 ## Short Balena Local Mode Command Summmary
 
