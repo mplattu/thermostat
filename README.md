@@ -36,6 +36,8 @@ application as environment vars. Here is a list of variables:
  * `THERMOSTAT_TEMP_DIFF` The desired temperature difference between outdoor and
    indoor temperatures. A positive value sets indoor temperature higher than the
    outdoor temperature. Type: integer
+ * `THERMOSTAT_TEMP_MAX` Maximum room temperature. If the indoor temperature raises
+   above this limit the relay is always turned off. Type: integer
 
 Defining devices
 
