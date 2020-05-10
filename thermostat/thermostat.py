@@ -38,6 +38,10 @@ temp_diff = float(settings.get_environ('THERMOSTAT_TEMP_DIFF', True))
 target_temp = outdoor_temp + temp_diff
 logger.debug('Target temperature: %.2f' % target_temp)
 
+max_temp = None
+if settings.get_environ('THERMOSTAT_TEMP_MAX', False):
+    max_temp = float(settings.get_environ('THERMOSTAT_TEMP_MAX', False))
+
 esp_commander = ESPCommander(
     settings.get_environ('THERMOSTAT_DEVICE', True),
     settings.get_environ('THERMOSTAT_DEVICE_PASSWORD', True),
@@ -55,6 +59,10 @@ elif (forced_relay_position == False):
     # Forced off
     esp_commander.relay_off()
     relay_status = 'OFF (Forced)'
+elif (max_temp is not None and room_temp > max_temp):
+    # Max temp set and reached
+    esp_commander.relay_off()
+    relay_status = 'OFF (Over max)'
 elif (target_temp < room_temp):
     # Too warm inside
     esp_commander.relay_off()
