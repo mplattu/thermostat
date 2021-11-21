@@ -5,9 +5,49 @@ Thermostat which drives the room temperature +2 degrees above the outside temp.
 These are the building blocks for the project:
  * Raspberry Pi 3 running balenaCloud IoT environment for easy remote access & updates
  * Local network with 3G-WLAN hotspot
- * Room temperature with USB/1-Wire DS1820
+ * Room temperature with Wemos D1 & MAX6675 thermocouple sensor
  * Outdoor temperature from Finnish Meteorological Institute
  * WLAN Relay Deltaco Smartplug SH-P01 [reflashed](http://io.sivuduuni.biz/reflashing-deltaco-smartplug-sh-p01-to-work-with-home-assistant/) with ESPhome. The relay can be controlled with ESPhome [REST API](https://esphome.io/web-api/index.html#switch).
+
+How this works:
+ 1. balenaCloud uploads and executes the code in the Raspberry Pi (Server)
+ 1. Server gets the outdoor temperature from FMI API
+ 1. Server gets the indoor temperature from a Wemos D1 sensor which broadcasts temperature to LAN every two seconds
+ 1. Server runs the SH-P01 relay(s) via WiFi
+
+## Sensor
+
+To build a sensor you need:
+ * Wemos D1 microcontroller
+ * MAX6675 temperature sensor and thermocouple
+ * PlatformIO build environment
+
+Connect the Wemos D1 pins (Dn) to MAX6675 in a following manner:
+ * D5 – SCK
+ * D6 – CS
+ * D7 – S0
+ * G – GND
+ * VCC – 3V3
+
+You don't need any additional components or wirings.
+
+Building:
+ 1. Configure your sensor by editing `sensor/include/settings.cpp` (get a template from `sensor/include/settings.cpp.sample`)
+ 1. Build, upload and execute the firmware:
+    ```
+    cd sensor
+    make run
+    ```
+ 1. Dump the broadcast messages using `tcpdump`:
+    ```
+    $ sudo tcpdump -A port 3490
+    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+    listening on eno1, link-type EN10MB (Ethernet), capture size 262144 bytes
+    10:09:59.678357 IP 192.168.49.101.3490 > 192.168.49.255.3490: UDP, length 14
+    E..*.x........1e..1.........Sensor 1:24.00....
+    10:10:01.719360 IP 192.168.49.101.3490 > 192.168.49.255.3490: UDP, length 14
+    E..*.y........1e..1.........Sensor 1:24.75....
+    ```
 
 ## Configuration
 

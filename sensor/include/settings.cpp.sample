@@ -1,0 +1,6 @@
+// SENSOR_NAME will be broadcasted along the temperature
+const char *SENSOR_NAME = "Sensor X";
+
+// WiFi name and key
+const char *WIFI_SSID = "yourssid";
+const char *WIFI_PASS = "yourpassword";
