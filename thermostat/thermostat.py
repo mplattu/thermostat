@@ -3,7 +3,7 @@
 import os
 from Logger import Logger
 from Settings import Settings
-from TemperatureMeter import TemperatureMeter
+from TemperatureMessages import TemperatureMessages
 from TemperatureFMI import TemperatureFMI
 from ESPCommander import ESPCommander
 
@@ -20,8 +20,14 @@ if settings.get_environ('THERMOSTAT_FORCE_OFF') != "":
     forced_relay_position = False
     logger.debug('Thermostat forced OFF by environment variable')
 
-room_temp_meter = TemperatureMeter(settings.get_cmdline('owfs_root', True), settings.get_environ('THERMOSTAT_OWFS_OVERRIDE'))
-room_temp = room_temp_meter.get_temperature()
+bcast_ip = ""
+if settings.get_environ('SENSOR_BCAST_IP') != "":
+    bcast_ip = settings.get_environ('SENSOR_BCAST_IP', False)
+
+room_temp_meter = TemperatureMessages(3490, bcast_ip)
+
+# Gather temperature readings for 30 seconds
+room_temp = room_temp_meter.get_temperature(room_temp_meter.gather_messages(30))
 if room_temp != None:
     logger.debug('Room temperature: %.2f' % room_temp)
 else:
