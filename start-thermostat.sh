@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Start Avahi-daemon to resolve .local mDNS domain
+service dbus start
+service avahi-daemon start
+
 LOG=/var/log/thermostat.log
 
 # Start Thermostat script
