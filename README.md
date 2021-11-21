@@ -38,6 +38,9 @@ Building:
     cd sensor
     make run
     ```
+ 1. Check Wemos D1 led:
+  * Blinking quickly (200 ms cycle): trying to connect to WiFi
+  * Blinking slowly (2000 ms cycle): sending temperature data as UDP packets
  1. Dump the broadcast messages using `tcpdump`:
     ```
     $ sudo tcpdump -A port 3490
