@@ -54,8 +54,6 @@ esp_commander = ESPCommander(
     settings.get_environ('THERMOSTAT_DEVICE_KEY', True)
 )
 
-esp_commander.set_test_mode(settings.get_cmdline('test_mode'))
-
 relay_status = 'n/a'
 if (forced_relay_position == True):
     # Forced on
