@@ -54,6 +54,9 @@ Building:
 The parameters for the script are given as balenaCloud variables which are shown to the
 application as environment vars. Here is a list of variables:
  * `THERMOSTAT_DELAY_BETWEEN` Delay between execution cycles in seconds. Type: integer
+ * `SENSOR_BCAST_IP` Broadcast IP to listen for sensor messages. This should be a
+    broadcast IP of your LAN (e.g. 192.168.0.255). If empty, binds to all addresses.
+    Type: string
  * `THERMOSTAT_DEVICE` ESPhome device name (e.g. `relay_4.local`). Each device must
    have a key and API password defined. See below. Type: comma-separated
    list of strings
@@ -69,10 +72,6 @@ application as environment vars. Here is a list of variables:
    ON/closed to turn the heating on regardless of the temperatures. Type: string
  * `THERMOSTAT_FORCE_OFF` If contains a value (e.g. `yes`) the relay is forced
    OFF/open to turn the heating off regardless of the temperatures. Type: string
- * `THERMOSTAT_OWFS_OVERRIDE` In normal setting all temperature meters in the 1-Wire
-   network are read and their average temperature is used. Devices listed (their 1-Wire
-   IDs, e.g. `10.67C6697351FF,10.67C669735F2C`) here ignore them. Type: comma-separated
-   list of strings
  * `THERMOSTAT_TEMP_DIFF` The desired temperature difference between outdoor and
    indoor temperatures. A positive value sets indoor temperature higher than the
    outdoor temperature. Type: integer
