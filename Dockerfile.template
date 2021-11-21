@@ -1,6 +1,5 @@
 FROM balenalib/%%BALENA_ARCH%%-debian-python:3-stretch
 RUN apt-get update
-RUN apt-get install -y owfs-fuse
 RUN pip3 install aioesphomeapi
 COPY start-thermostat.sh /srv/thermostat/start-thermostat.sh
 COPY thermostat/* /srv/thermostat/thermostat/
