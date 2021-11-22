@@ -20,3 +20,11 @@ class Settings:
                 self.logger.debug("Environment variable %s is missing" % name)
 
         return env_value
+
+    def environ_is_true(self, name, is_required=False):
+        env_value = self.get_environ(name, is_required).lower()
+
+        if env_value in ["", "0", "no", "false", "-"]:
+            return False
+
+        return True

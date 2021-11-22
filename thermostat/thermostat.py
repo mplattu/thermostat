@@ -12,11 +12,11 @@ settings = Settings()
 
 # Check for forced relay position
 forced_relay_position = None
-if settings.get_environ('THERMOSTAT_FORCE_ON') != "":
+if settings.environ_is_true('THERMOSTAT_FORCE_ON'):
     forced_relay_position = True
     logger.debug('Thermostat forced ON by environment variable')
 
-if settings.get_environ('THERMOSTAT_FORCE_OFF') != "":
+if settings.environ_is_true('THERMOSTAT_FORCE_OFF'):
     forced_relay_position = False
     logger.debug('Thermostat forced OFF by environment variable')
 
