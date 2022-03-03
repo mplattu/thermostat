@@ -56,6 +56,7 @@ Building:
 
 The parameters for the script are given as balenaCloud variables which are shown to the
 application as environment vars. Here is a list of variables:
+ * `BLYNK_AUTH_TOKEN` Blynk authentication token. Type: string
  * `THERMOSTAT_DELAY_BETWEEN` Delay between execution cycles in seconds. Type: integer
  * `SENSOR_BCAST_IP` Broadcast IP to listen for sensor messages. This should be a
     broadcast IP of your LAN (e.g. 192.168.0.255). If empty, binds to all addresses.
@@ -71,10 +72,6 @@ application as environment vars. Here is a list of variables:
    list of strings
  * `THERMOSTAT_FMI_URL` URL to the [FMI WFS API](https://en.ilmatieteenlaitos.fi/open-data-manual-fmi-wfs-services)
    (e.g. [this](http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::multipointcoverage&place=raseborg&parameters=Temperature) - check the nearest municipality and edit parameter `place=xxx`). Type: string
- * `THERMOSTAT_FORCE_ON` If contains a value (e.g. `yes`) the relay is forced
-   ON/closed to turn the heating on regardless of the temperatures. Type: string
- * `THERMOSTAT_FORCE_OFF` If contains a value (e.g. `yes`) the relay is forced
-   OFF/open to turn the heating off regardless of the temperatures. Type: string
  * `THERMOSTAT_TEMP_DIFF` The desired temperature difference between outdoor and
    indoor temperatures. A positive value sets indoor temperature higher than the
    outdoor temperature. Type: integer
@@ -87,6 +84,10 @@ Defining devices
    `THERMOSTAT_DEVICE=relay_1.local THERMOSTAT_DEVICE_KEY=relay1_deltaco_sh-p01 THERMOSTAT_DEVICE_PASSWORD=relay1apipassword`
  * Two (or more) devices:
    `THERMOSTAT_DEVICE=relay_1.local,relay_2.local THERMOSTAT_DEVICE_KEY=relay1_deltaco_sh-p01,relay2_deltaco_sh-p01 THERMOSTAT_DEVICE_PASSWORD=relay1apipassword,relay2apipassword`
+
+## Note About Licenses
+
+The [blynk-library-python](https://github.com/vshymanskyy/blynk-library-python)  files `thermostat/Blynk*.py`) license is at `thermostat/Blynk.LICENSE`.
 
 ## Short Balena Local Mode Command Summmary
 
