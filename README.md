@@ -19,15 +19,12 @@ How this works:
 
 To build a sensor you need:
  * Wemos D1 microcontroller
- * MAX6675 temperature sensor and thermocouple
+ * BME280 environment sensor (at the moment only temperature is being used)
  * PlatformIO build environment
 
-Connect the Wemos D1 pins (Dn) to MAX6675 in a following manner:
- * D5 – SCK
- * D6 – CS
- * D7 – S0
- * G – GND
- * VCC – 3V3
+Connect the Wemos D1 pins and BME280:
+
+![See images/wemosd1_bme280.png](images/wemosd1_bme280.png)
 
 You don't need any additional components or wirings.
 
