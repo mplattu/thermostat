@@ -5,7 +5,7 @@ Thermostat which drives the room temperature +2 degrees above the outside temp.
 These are the building blocks for the project:
  * Raspberry Pi 3 running balenaCloud IoT environment for easy remote access & updates
  * Local network with 3G-WLAN hotspot
- * Room temperature with Wemos D1 & MAX6675 thermocouple sensor
+ * Room temperature with Wemos D1 & DS18B20 thermocouple sensor
  * Outdoor temperature from Finnish Meteorological Institute
  * WLAN Relay Deltaco Smartplug SH-P01 [reflashed](http://io.sivuduuni.biz/reflashing-deltaco-smartplug-sh-p01-to-work-with-home-assistant/) with ESPhome. The relay can be controlled with ESPhome [REST API](https://esphome.io/web-api/index.html#switch).
 
@@ -19,17 +19,19 @@ How this works:
 
 To build a sensor you need:
  * Wemos D1 microcontroller
- * MAX6675 temperature sensor and thermocouple
+ * DS18B20 temperature sensor
+ * 4,7 kOhm resistor
  * PlatformIO build environment
 
-Connect the Wemos D1 pins (Dn) to MAX6675 in a following manner:
- * D5 – SCK
- * D6 – CS
- * D7 – S0
- * G – GND
- * VCC – 3V3
+Connect the Wemos D1 pins (Dn) to DS18B20 sensor in a following manner:
 
-You don't need any additional components or wirings.
+```
+Wemos D1   DS18B20
+ 3,3        VCC (red)
+ G          GND (black)
+ D7         data (yellow)
+```
+* Connect Wemos D1 pins `3,3` and `D7` with 4,7 kOhm resistor
 
 Building:
  1. Configure your sensor by editing `sensor/include/settings.cpp` (get a template from `sensor/include/settings.cpp.sample`)
