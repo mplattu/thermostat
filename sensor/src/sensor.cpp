@@ -4,11 +4,11 @@
 #include <WiFiUdp.h>
 
 #include "settings.cpp"
+#include "../lib/tempDs18b20.cpp"
 
 // DS18B20 pin
 #define ONEWIRE_PIN D7
-OneWire ds(ONEWIRE_PIN);
-byte temperatureSensorAddress[8];
+TempDS18B20 temperatureSensor(ONEWIRE_PIN);
 
 // UDP port to send broadcast (both from and to)
 #define UDP_PORT 3490
@@ -23,57 +23,6 @@ IPAddress getBroadcastAddress() {
   myAddress[3] = 255;
 
   return myAddress;
-}
-
-bool setTemperatureSensorAddress() {
-  if ( !ds.search(temperatureSensorAddress)) {
-    ds.reset_search();
-    delay(250);
-    Serial.println("Failed to find DS device");
-    return false;
-  }
-
-  if (OneWire::crc8(temperatureSensorAddress, 7) != temperatureSensorAddress[7]) {
-      Serial.println("CRC is not valid!");
-      return false;
-  }
-
-  return true;
-}
-
-float getTemperatureCelsius() {
-  byte i;
-  byte data[12];
-  float celsius;
-  
-  ds.reset();
-  ds.select(temperatureSensorAddress);
-  ds.write(0x44, 1);        // start conversion, with parasite power on at the end  
-  delay(1000);
-  ds.reset();
-  ds.select(temperatureSensorAddress);    
-  ds.write(0xBE);         // Read Scratchpad
- 
-  for ( i = 0; i < 9; i++) {           
-    data[i] = ds.read();
-  }
- 
-  // Convert the data to actual temperature
-  int16_t raw = (data[1] << 8) | data[0];
-
-  // This rule is valid ONLY for DS18B20
-  byte cfg = (data[4] & 0x60);
-  if (cfg == 0x00) raw = raw & ~7;  // 9 bit resolution, 93.75 ms
-  else if (cfg == 0x20) raw = raw & ~3; // 10 bit res, 187.5 ms
-  else if (cfg == 0x40) raw = raw & ~1; // 11 bit res, 375 ms
-
-  celsius = (float)raw / 16.0;
-
-  Serial.print("  Temperature = ");
-  Serial.print(celsius);
-  Serial.println(" Celsius");
-
-  return celsius;
 }
 
 void sendMessage(float temperature) {
@@ -116,17 +65,12 @@ void setup() {
   broadcastAddress = getBroadcastAddress();
   Serial.print("Broadcast address: ");
   Serial.println(broadcastAddress);
-
-  while (!setTemperatureSensorAddress()) {
-    Serial.println("Failed to get OneWire sensor address");
-    delay(1000);
-  }
 }
 
 // the loop function runs over and over again forever
 void loop() {
   // Reads temperature
-  const float tempCelsius = getTemperatureCelsius();
+  const float tempCelsius = temperatureSensor.getTemperatureCelsius();
 
   sendMessage(tempCelsius);
 
