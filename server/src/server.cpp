@@ -1,42 +1,20 @@
 #include <OneWire.h>
 
 #include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
 
-#include "sensor_name.cpp"
 #include "../../include/settings.cpp"
 #include "../../lib/tempDs18b20.cpp"
+#include "../lib/tempSensorListener.cpp"
 
 // DS18B20 pin
 #define ONEWIRE_PIN D7
-TempDS18B20 temperatureSensor(ONEWIRE_PIN);
+TempDS18B20 outdoorTemperatureSensor(ONEWIRE_PIN);
 
 // UDP port to send broadcast (both from and to)
 #define UDP_PORT 3490
-WiFiUDP UDP;
-IPAddress broadcastAddress;
+TempSensorListener tempSensorListener(UDP_PORT);
 
 #define LED_PIN LED_BUILTIN
-
-IPAddress getBroadcastAddress() {
-  IPAddress myAddress = WiFi.localIP();
-
-  myAddress[3] = 255;
-
-  return myAddress;
-}
-
-void sendMessage(float temperature) {
-  String message = String(SENSOR_NAME) + ":" + String(temperature);
-  Serial.printf("Sending message: '%s'\n", message.c_str());
-
-  char messageStr[message.length()+1];
-  strcpy(messageStr, message.c_str());
-
-  UDP.beginPacket(broadcastAddress, UDP_PORT);
-  UDP.write(messageStr);
-  UDP.endPacket();
-}
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -55,29 +33,36 @@ void setup() {
     digitalWrite(LED_PIN, HIGH);
   }
 
-  UDP.begin(UDP_PORT);
+  tempSensorListener.begin();
 
   Serial.println("");
   Serial.print("Connected to ");
   Serial.println(WIFI_SSID);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-
-  broadcastAddress = getBroadcastAddress();
-  Serial.print("Broadcast address: ");
-  Serial.println(broadcastAddress);
 }
 
 // the loop function runs over and over again forever
 void loop() {
   // Reads temperature
-  const float tempCelsius = temperatureSensor.getTemperatureCelsius();
+  const float outdoorTemperature = outdoorTemperatureSensor.getTemperatureCelsius();
+  Serial.print("Outdoor temperature: ");
+  Serial.println(outdoorTemperature);
 
-  sendMessage(tempCelsius);
+  tempSensorListener.readMessages();
+  const float averageIndoorTemperature = tempSensorListener.getAverageTemperature();
+  Serial.print("Average indoor temperature: ");
+  Serial.println(averageIndoorTemperature);
+
+  if (outdoorTemperature + INDOOR_TEMP_TARGET < averageIndoorTemperature) {
+    Serial.println("Turn heating off");
+  } else {
+    Serial.println("Turn heating on");
+  }
 
   digitalWrite(LED_PIN, LOW);
-  delay(1000);
+  delay(100);
 
   digitalWrite(LED_PIN, HIGH);
-  delay(1000);
+  delay(100);
 }

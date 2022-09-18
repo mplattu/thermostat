@@ -126,5 +126,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-sensor/include/settings.cpp
+include/settings.cpp
 sensor/.pio
+sensor/include/sensor_name.cpp
+server/.pio
