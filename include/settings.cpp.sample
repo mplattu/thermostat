@@ -8,3 +8,7 @@ const char *WIFI_PASS = "yourpassword";
 // Target indoor temperature (added to outdoor temperature)
 // If you want indoor temperature to be outdoor + 5.0 set this to 5.0
 const float INDOOR_TEMP_TARGET = 5.0;
+
+#define BLYNK_TEMPLATE_ID "fill-from-blynk"
+#define BLYNK_DEVICE_NAME "fill-from-blynk"
+#define BLYNK_AUTH_TOKEN "fill-from-blynk"
