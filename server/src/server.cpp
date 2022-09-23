@@ -62,7 +62,7 @@ void setupArduinoCloud() {
 
 #ifdef INFLUX_DB
 InfluxDBClient influxDbClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
-Point influxDbSensor(INFLUXDB_SENSOR_NAME);
+Point influxDbSensor(SENSOR_NAME);
 #endif
 
 // the setup function runs once when you press reset or power the board

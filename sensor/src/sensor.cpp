@@ -1,10 +1,16 @@
 #include <OneWire.h>
 
+#include "../../include/settings.cpp"
+
+#ifdef INFLUX_DB
+  #include <InfluxDbClient.h>
+  InfluxDBClient influxDbClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
+  Point influxDbSensor(SENSOR_NAME);
+#endif
+
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-#include "sensor_name.cpp"
-#include "../../include/settings.cpp"
 #include "../../lib/tempDs18b20.cpp"
 
 // DS18B20 pin
@@ -80,4 +86,14 @@ void loop() {
 
   digitalWrite(LED_PIN, HIGH);
   delay(1000);
+
+#ifdef INFLUX_DB
+  influxDbSensor.clearFields();
+  influxDbSensor.addField("temp", tempCelsius);
+  influxDbClient.pointToLineProtocol(influxDbSensor);
+  if (!influxDbClient.writePoint(influxDbSensor)) {
+    Serial.print("InfluxDB write failed: ");
+    Serial.println(influxDbClient.getLastErrorMessage());
+  }
+#endif
 }
