@@ -1,7 +1,6 @@
 #ifndef _TEMP_SENSOR_LISTENER_H_
 #define _TEMP_SENSOR_LISTENER_H_
 
-#include <WiFiUdp.h>
 #include <bits/stdc++.h>
 
 class TempSensorListener {

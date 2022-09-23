@@ -9,6 +9,8 @@ const char *WIFI_PASS = "yourpassword";
 // If you want indoor temperature to be outdoor + 5.0 set this to 5.0
 const float INDOOR_TEMP_TARGET = 5.0;
 
-#define BLYNK_TEMPLATE_ID "fill-from-blynk"
-#define BLYNK_DEVICE_NAME "fill-from-blynk"
-#define BLYNK_AUTH_TOKEN "fill-from-blynk"
+// Arduino IoT Cloud Device ID
+const char *ARDUINO_DEVICE_ID = "device-id-from-arduino-iot-cloud";
+
+// Arduino IoT Cloud Device Secret Key
+const char *ARDUINO_DEVICE_SECRET_KEY = "device-secret-key-from-arduino-iot-cloud";

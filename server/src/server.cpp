@@ -1,14 +1,11 @@
 #include <OneWire.h>
 
-#include <ESP8266WiFi.h>
+#include <ArduinoIoTCloud.h>
+#include <Arduino_ConnectionHandler.h>
 
 #include "../../include/settings.cpp"
 #include "../../lib/tempDs18b20.cpp"
 #include "../lib/tempSensorListener.cpp"
-
-#define BLYNK_PRINT Serial
-
-#include <BlynkSimpleEsp8266_SSL.h>
 
 // DS18B20 pin
 #define ONEWIRE_PIN D7
@@ -20,32 +17,42 @@ TempSensorListener tempSensorListener(UDP_PORT);
 
 #define LED_PIN LED_BUILTIN
 
+WiFiConnectionHandler ArduinoIoTPreferredConnection(WIFI_SSID, WIFI_PASS);
+float tempIndoor;
+float tempOutdoor;
+bool forceHeatingOn;
+bool forceHeatingOff;
+
+void setupArduinoCloud() {
+  Serial.print("Setting board id and secret key...");
+  ArduinoCloud.setBoardId(ARDUINO_DEVICE_ID);
+  ArduinoCloud.setSecretDeviceKey(ARDUINO_DEVICE_SECRET_KEY);
+  Serial.println("Set");
+
+  Serial.print("Setting properties...");
+  ArduinoCloud.addProperty(forceHeatingOn, READWRITE, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(forceHeatingOff, READWRITE, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(tempIndoor, READ, 10 * SECONDS, NULL);
+  ArduinoCloud.addProperty(tempOutdoor, READ, 10 * SECONDS, NULL);
+  Serial.println("Set");
+
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  setDebugMessageLevel(2);
+  //ArduinoCloud.printDebugInfo();
+}
+
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(9600);
   pinMode(LED_PIN, OUTPUT);
 
-  Serial.println("Now starting Blynk");
-  Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASS);
-  Serial.println("Blynk started");
+  setupArduinoCloud();
 
   tempSensorListener.begin();
 }
 
 int forceHeatingAlwaysOn = 0;
 int forceHeatingAlwaysOff = 0;
-
-// V1: Heating always on
-BLYNK_WRITE(V1) {
-  forceHeatingAlwaysOn = param.asInt();
-  Serial.println("BLYNK_WRITE V1 CALLED");
-}
-
-// V2: Heating always off
-BLYNK_WRITE(V2) {
-  forceHeatingAlwaysOff = param.asInt();
-  Serial.println("BLYNK_WRITE V2 CALLED");
-}
 
 void turnHeatingOff(bool forced) {
   Serial.print("Turning heating off");
@@ -65,36 +72,29 @@ void turnHeatingOn(bool forced) {
 
 // the loop function runs over and over again forever
 void loop() {
-  Serial.print("Blynk loop...");
-  Blynk.run();
-  Serial.println("OK");
-
+  digitalWrite(LED_PIN, LOW);
+  Serial.print("Updating ArduinoCloud...");
+  ArduinoCloud.update();
+  Serial.println("Updated");
+  digitalWrite(LED_PIN, HIGH);
+ 
   // Reads temperature
-  const float outdoorTemperature = outdoorTemperatureSensor.getTemperatureCelsius();
+  tempOutdoor = outdoorTemperatureSensor.getTemperatureCelsius();
   Serial.print("Outdoor temperature: ");
-  Serial.println(outdoorTemperature);
+  Serial.println(tempOutdoor);
 
   tempSensorListener.readMessages();
-  const float averageIndoorTemperature = tempSensorListener.getAverageTemperature();
+  tempIndoor = tempSensorListener.getAverageTemperature();
   Serial.print("Average indoor temperature: ");
-  Serial.println(averageIndoorTemperature);
+  Serial.println(tempIndoor);
 
-  Blynk.virtualWrite(V0, averageIndoorTemperature);
-  Blynk.virtualWrite(V3, outdoorTemperature);
-  
-  if (forceHeatingAlwaysOff == 1) {
+  if (forceHeatingOff == 1) {
     turnHeatingOff(true);
-  } else if (forceHeatingAlwaysOn == 1) {
+  } else if (forceHeatingOn == 1) {
     turnHeatingOn(true);
-  } else if (outdoorTemperature + INDOOR_TEMP_TARGET < averageIndoorTemperature) {
+  } else if (tempOutdoor + INDOOR_TEMP_TARGET < tempIndoor) {
     turnHeatingOff(false);
   } else {
     turnHeatingOff(false);
   }
-
-  digitalWrite(LED_PIN, LOW);
-  delay(500);
-
-  digitalWrite(LED_PIN, HIGH);
-  delay(500);
 }
