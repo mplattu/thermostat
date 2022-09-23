@@ -1,9 +1,25 @@
 #include <OneWire.h>
 
-#include <ArduinoIoTCloud.h>
-#include <Arduino_ConnectionHandler.h>
-
 #include "../../include/settings.cpp"
+
+#ifdef INFLUX_DB
+  #include <InfluxDbClient.h>
+  #include <ESP8266WiFiMulti.h>
+  ESP8266WiFiMulti wifiMulti;
+#endif
+
+#ifdef ARDUINO_IOT_CLOUD
+  #include <ArduinoIoTCloud.h>
+  #include <Arduino_ConnectionHandler.h>
+#endif
+
+#ifndef INFLUX_DB
+  #ifndef ARDUINO_IOT_CLOUD
+    #include <ESP8266WiFiMulti.h>
+    ESP8266WiFiMulti wifiMulti;
+  #endif
+#endif
+
 #include "../../lib/tempDs18b20.cpp"
 #include "../lib/tempSensorListener.cpp"
 
@@ -17,11 +33,13 @@ TempSensorListener tempSensorListener(UDP_PORT);
 
 #define LED_PIN LED_BUILTIN
 
-WiFiConnectionHandler ArduinoIoTPreferredConnection(WIFI_SSID, WIFI_PASS);
 float tempIndoor;
 float tempOutdoor;
 bool forceHeatingOn;
 bool forceHeatingOff;
+
+#ifdef ARDUINO_IOT_CLOUD
+WiFiConnectionHandler ArduinoIoTPreferredConnection(WIFI_SSID, WIFI_PASS);
 
 void setupArduinoCloud() {
   Serial.print("Setting board id and secret key...");
@@ -40,19 +58,46 @@ void setupArduinoCloud() {
   setDebugMessageLevel(2);
   //ArduinoCloud.printDebugInfo();
 }
+#endif
+
+#ifdef INFLUX_DB
+InfluxDBClient influxDbClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
+Point influxDbSensor(INFLUXDB_SENSOR_NAME);
+#endif
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(9600);
   pinMode(LED_PIN, OUTPUT);
 
+#ifdef ARDUINO_IOT_CLOUD
   setupArduinoCloud();
+#else
+  Serial.println("Connecting to WiFi");
+  WiFi.mode(WIFI_STA);
+  wifiMulti.addAP(WIFI_SSID, WIFI_PASS);
+  while (wifiMulti.run() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println("Connected");
+
+  forceHeatingOff = false;
+  forceHeatingOn = false;
+#endif
+
+#ifdef INFLUX_DB
+  if (influxDbClient.validateConnection()) {
+    Serial.print("Connected to InfluxDB: ");
+    Serial.println(influxDbClient.getServerUrl());
+  } else {
+    Serial.print("InfluxDB connection failed: ");
+    Serial.println(influxDbClient.getLastErrorMessage());
+  }
+#endif
 
   tempSensorListener.begin();
 }
-
-int forceHeatingAlwaysOn = 0;
-int forceHeatingAlwaysOff = 0;
 
 void turnHeatingOff(bool forced) {
   Serial.print("Turning heating off");
@@ -73,9 +118,13 @@ void turnHeatingOn(bool forced) {
 // the loop function runs over and over again forever
 void loop() {
   digitalWrite(LED_PIN, LOW);
+#ifdef ARDUINO_IOT_CLOUD
   Serial.print("Updating ArduinoCloud...");
   ArduinoCloud.update();
   Serial.println("Updated");
+#else
+  delay(1000);
+#endif
   digitalWrite(LED_PIN, HIGH);
  
   // Reads temperature
@@ -97,4 +146,14 @@ void loop() {
   } else {
     turnHeatingOff(false);
   }
+
+#ifdef INFLUX_DB
+  influxDbSensor.clearFields();
+  influxDbSensor.addField("temp", tempOutdoor);
+  influxDbClient.pointToLineProtocol(influxDbSensor);
+  if (!influxDbClient.writePoint(influxDbSensor)) {
+    Serial.print("InfluxDB write failed: ");
+    Serial.println(influxDbClient.getLastErrorMessage());
+  }
+#endif
 }

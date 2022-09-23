@@ -9,8 +9,22 @@ const char *WIFI_PASS = "yourpassword";
 // If you want indoor temperature to be outdoor + 5.0 set this to 5.0
 const float INDOOR_TEMP_TARGET = 5.0;
 
+// Define ARDUINO_IOT_CLOUD to compile Arduino IoT Cloud support
+// In this case you have to set ARDUINO_DEVICE_IO and ARDUINO_DEVICE_SECRET_KEY
+#define ARDUINO_IOT_CLOUD
+
 // Arduino IoT Cloud Device ID
 const char *ARDUINO_DEVICE_ID = "device-id-from-arduino-iot-cloud";
 
 // Arduino IoT Cloud Device Secret Key
 const char *ARDUINO_DEVICE_SECRET_KEY = "device-secret-key-from-arduino-iot-cloud";
+
+// Define INFLUX_DB to compile Influx DB client support
+// In this case you have to set INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG and INFLUXDB_DB_NAME
+#define INFLUX_DB
+
+const char *INFLUXDB_URL = "influxdb-url";
+const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";
+const char *INFLUXDB_ORG = "influxdb-org";
+const char *INFLUXDB_BUCKET = "influxdb-bucket";
+const char *INFLUXDB_SENSOR_NAME = "this-sensor-name-shown-in-influxdb";
