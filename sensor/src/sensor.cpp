@@ -80,10 +80,14 @@ void setup() {
   influxDbTalker->begin();
   Serial.println("OK");
 #endif
+
+  ArduinoOTA.begin();
 }
 
 // the loop function runs over and over again forever
 void loop() {
+  ArduinoOTA.handle();
+  
   // Reads temperature
   const float tempCelsius = temperatureSensor.getTemperatureCelsius();
 
