@@ -1,11 +1,11 @@
 #include <OneWire.h>
+#include <ArduinoOTA.h>
 
 #include "../../include/settings.cpp"
 
 #ifdef INFLUX_DB
-  #include <InfluxDbClient.h>
-  InfluxDBClient influxDbClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
-  Point influxDbSensor(SENSOR_NAME);
+  #include "../../lib/influxDbTalker.cpp"
+  InfluxDbTalker *influxDbTalker;
 #endif
 
 #include <ESP8266WiFi.h>
@@ -50,6 +50,7 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 
   Serial.printf("Connecting to WiFi (%s): ", WIFI_SSID);
+  WiFi.hostname(SENSOR_NAME);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   // Wait for connection
@@ -72,6 +73,13 @@ void setup() {
   broadcastAddress = getBroadcastAddress();
   Serial.print("Broadcast address: ");
   Serial.println(broadcastAddress);
+
+#ifdef INFLUX_DB
+  Serial.print("Initialising InfluxDbTalker...");
+  influxDbTalker = new InfluxDbTalker(SENSOR_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET);
+  influxDbTalker->begin();
+  Serial.println("OK");
+#endif
 }
 
 // the loop function runs over and over again forever
@@ -88,12 +96,9 @@ void loop() {
   delay(1000);
 
 #ifdef INFLUX_DB
-  influxDbSensor.clearFields();
-  influxDbSensor.addField("temp", tempCelsius);
-  influxDbClient.pointToLineProtocol(influxDbSensor);
-  if (!influxDbClient.writePoint(influxDbSensor)) {
+  if (!influxDbTalker->report("temp", tempCelsius)) {
     Serial.print("InfluxDB write failed: ");
-    Serial.println(influxDbClient.getLastErrorMessage());
+    Serial.println(influxDbTalker->getLastErrorMessage());
   }
 #endif
 }
