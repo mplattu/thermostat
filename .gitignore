@@ -128,5 +128,6 @@ dmypy.json
 
 include/settings.cpp
 sensor/.pio
-sensor/include/sensor_name.cpp
+sensor/include/sensor_settings*.cpp
 server/.pio
+server/include/server_settings*.cpp

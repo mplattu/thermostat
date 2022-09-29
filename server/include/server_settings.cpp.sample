@@ -1,0 +1,20 @@
+// SERVER_NAME will be used e.g. communicating to InfluxDB server
+const char *SERVER_NAME = "temp_outdoor";
+
+// Target indoor temperature (added to outdoor temperature)
+// If you want indoor temperature to be outdoor + 5.0 set this to 5.0
+const float INDOOR_TEMP_TARGET = 5.0;
+
+// Define ARDUINO_IOT_CLOUD to compile Arduino IoT Cloud support
+// In this case you have to set ARDUINO_DEVICE_IO and ARDUINO_DEVICE_SECRET_KEY
+#define ARDUINO_IOT_CLOUD
+
+// Arduino IoT Cloud Device ID
+const char *ARDUINO_DEVICE_ID = "device-id-from-arduino-iot-cloud";
+
+// Arduino IoT Cloud Device Secret Key
+const char *ARDUINO_DEVICE_SECRET_KEY = "device-secret-key-from-arduino-iot-cloud";
+
+// This is the InfluxDB token for the server (outdoor temperature)
+// Set this only in case you use InfluxDB
+const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";

@@ -1,6 +1,7 @@
 #include <OneWire.h>
 
 #include "../../include/settings.cpp"
+#include "../include/server_settings.cpp"
 
 #ifdef INFLUX_DB
   #include <InfluxDbClient.h>
@@ -62,7 +63,7 @@ void setupArduinoCloud() {
 
 #ifdef INFLUX_DB
 InfluxDBClient influxDbClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
-Point influxDbSensor(SENSOR_NAME);
+Point influxDbSensor(SERVER_NAME);
 #endif
 
 // the setup function runs once when you press reset or power the board

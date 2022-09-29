@@ -1,0 +1,6 @@
+// SENSOR_NAME will be broadcasted along the temperature
+// It will be used also when communicatin to InfluxDB server
+const char *SENSOR_NAME = "Sensor X";
+
+// Set this only in case you use InfluxDB
+const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";

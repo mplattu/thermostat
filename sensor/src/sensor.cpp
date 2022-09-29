@@ -2,6 +2,7 @@
 #include <ArduinoOTA.h>
 
 #include "../../include/settings.cpp"
+#include "../include/sensor_settings.cpp"
 
 #ifdef INFLUX_DB
   #include "../../lib/influxDbTalker.cpp"
