@@ -11,6 +11,7 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <ESP8266mDNS.h>
 
 #include "../../lib/tempDs18b20.cpp"
 
@@ -51,7 +52,6 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
 
   Serial.printf("Connecting to WiFi (%s): ", WIFI_SSID);
-  WiFi.hostname(SENSOR_NAME);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   // Wait for connection
@@ -82,11 +82,19 @@ void setup() {
   Serial.println("OK");
 #endif
 
+  if (MDNS.begin(SENSOR_NAME)) {
+    Serial.println("Started mDNS");
+  }
+  else {
+    Serial.println("Failed to start mDNS");
+  }
+
   ArduinoOTA.begin();
 }
 
 // the loop function runs over and over again forever
 void loop() {
+  MDNS.update();
   ArduinoOTA.handle();
   
   // Reads temperature

@@ -1,4 +1,6 @@
-// SERVER_NAME will be used e.g. communicating to InfluxDB server
+// SERVER_NAME will be used when
+//  * mDNS name SERVER_NAME.local
+//  * communicating to InfluxDB server
 const char *SERVER_NAME = "temp_outdoor";
 
 // Target indoor temperature (added to outdoor temperature)

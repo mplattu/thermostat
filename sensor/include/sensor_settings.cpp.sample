@@ -1,5 +1,7 @@
-// SENSOR_NAME will be broadcasted along the temperature
-// It will be used also when communicatin to InfluxDB server
+// SENSOR_NAME will be used when
+//  * broadcasting the temperature
+//  * mDNS name SERVER_NAME.local
+//  * communicating to InfluxDB server
 const char *SENSOR_NAME = "Sensor X";
 
 // Set this only in case you use InfluxDB
