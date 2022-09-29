@@ -24,6 +24,8 @@
 #include "../../lib/tempDs18b20.cpp"
 #include "../lib/tempSensorListener.cpp"
 
+#include <ESP8266mDNS.h>
+
 // DS18B20 pin
 #define ONEWIRE_PIN D7
 TempDS18B20 outdoorTemperatureSensor(ONEWIRE_PIN);
@@ -96,6 +98,13 @@ void setup() {
     Serial.println(influxDbClient.getLastErrorMessage());
   }
 #endif
+  
+  if (MDNS.begin(SERVER_NAME)) {
+    Serial.println("Started mDNS");
+  }
+  else {
+    Serial.println("Failed to start mDNS");
+  }
 
   tempSensorListener.begin();
 }
@@ -118,6 +127,8 @@ void turnHeatingOn(bool forced) {
 
 // the loop function runs over and over again forever
 void loop() {
+  MDNS.update();
+
   digitalWrite(LED_PIN, LOW);
 #ifdef ARDUINO_IOT_CLOUD
   Serial.print("Updating ArduinoCloud...");
