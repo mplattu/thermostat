@@ -1,4 +1,5 @@
 #include <OneWire.h>
+#include <ArduinoOTA.h>
 
 #include "../../include/settings.cpp"
 #include "../include/server_settings.cpp"
@@ -128,6 +129,7 @@ void turnHeatingOn(bool forced) {
 // the loop function runs over and over again forever
 void loop() {
   MDNS.update();
+  ArduinoOTA.handle();
 
   digitalWrite(LED_PIN, LOW);
 #ifdef ARDUINO_IOT_CLOUD
