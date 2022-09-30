@@ -14,7 +14,7 @@ public:
             const char *influxDbOrg,
             const char *influxDbBucket
         );
-    void begin();
+    bool begin();
     bool report(char* fieldName, float value);
     String getLastErrorMessage();
 private:

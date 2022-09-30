@@ -18,12 +18,21 @@ InfluxDbTalker::InfluxDbTalker(
     this->influxDbClientInitialised = true;
 }
 
-void InfluxDbTalker::begin() {
+bool InfluxDbTalker::begin() {
     if (!this->influxDbClientInitialised) {
         this->lastErrorMessage = String("InfluxDbTalker has not been initialised");
+        return false;
+    }
+
+    if (!this->influxDbClient->validateConnection()) {
+        this->lastErrorMessage = String("InfluxDB server connection failed: ") +
+            String(this->influxDbClient->getLastErrorMessage());
+        return false;
     }
 
     // TBD: Set time from NTP
+
+    return true;
 }
 
 bool InfluxDbTalker::report(char* fieldName, float value) {
