@@ -5,9 +5,8 @@
 #include "../include/server_settings.cpp"
 
 #ifdef INFLUX_DB
-  #include <InfluxDbClient.h>
-  #include <ESP8266WiFiMulti.h>
-  ESP8266WiFiMulti wifiMulti;
+  #include "../../lib/influxDbTalker.h"
+  InfluxDbTalker *influxDbTalker;
 #endif
 
 #ifdef ARDUINO_IOT_CLOUD
@@ -64,14 +63,9 @@ void setupArduinoCloud() {
 }
 #endif
 
-#ifdef INFLUX_DB
-InfluxDBClient influxDbClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
-Point influxDbSensor(SERVER_NAME);
-#endif
-
 // the setup function runs once when you press reset or power the board
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
 
 #ifdef ARDUINO_IOT_CLOUD
@@ -91,13 +85,10 @@ void setup() {
 #endif
 
 #ifdef INFLUX_DB
-  if (influxDbClient.validateConnection()) {
-    Serial.print("Connected to InfluxDB: ");
-    Serial.println(influxDbClient.getServerUrl());
-  } else {
-    Serial.print("InfluxDB connection failed: ");
-    Serial.println(influxDbClient.getLastErrorMessage());
-  }
+  Serial.print("Initialising InfluxDbTalker...");
+  influxDbTalker = new InfluxDbTalker(SERVER_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET);
+  influxDbTalker->begin();
+  Serial.println("OK");
 #endif
   
   if (MDNS.begin(SERVER_NAME)) {
@@ -162,12 +153,9 @@ void loop() {
   }
 
 #ifdef INFLUX_DB
-  influxDbSensor.clearFields();
-  influxDbSensor.addField("temp", tempOutdoor);
-  influxDbClient.pointToLineProtocol(influxDbSensor);
-  if (!influxDbClient.writePoint(influxDbSensor)) {
+  if (!influxDbTalker->report("temp", tempOutdoor)) {
     Serial.print("InfluxDB write failed: ");
-    Serial.println(influxDbClient.getLastErrorMessage());
+    Serial.println(influxDbTalker->getLastErrorMessage());
   }
 #endif
 }

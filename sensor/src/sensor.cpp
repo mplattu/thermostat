@@ -5,7 +5,8 @@
 #include "../include/sensor_settings.cpp"
 
 #ifdef INFLUX_DB
-  #include "../../lib/influxDbTalker.cpp"
+  #include <ESP8266WiFiMulti.h>
+  #include "../../lib/influxDbTalker.h"
   InfluxDbTalker *influxDbTalker;
 #endif
 
@@ -48,7 +49,7 @@ void sendMessage(float temperature) {
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
 
   Serial.printf("Connecting to WiFi (%s): ", WIFI_SSID);
