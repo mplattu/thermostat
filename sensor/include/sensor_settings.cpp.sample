@@ -6,3 +6,7 @@ const char *SENSOR_NAME = "Sensor X";
 
 // Set this only in case you use InfluxDB
 const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";
+
+// Set this to non-zero if you want to set deep sleep timer
+const unsigned int DEEP_SLEEP_MICROSECONDS = 0;
+//const unsigned int DEEP_SLEEP_MICROSECONDS = 60e6;    // 60 seconds

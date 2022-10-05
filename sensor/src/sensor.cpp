@@ -94,6 +94,8 @@ void setup() {
 }
 
 // the loop function runs over and over again forever
+unsigned int loopCounter = 0;
+
 void loop() {
   MDNS.update();
   ArduinoOTA.handle();
@@ -115,4 +117,11 @@ void loop() {
     Serial.println(influxDbTalker->getLastErrorMessage());
   }
 #endif
+
+  loopCounter++;
+
+  if (DEEP_SLEEP_MICROSECONDS > 0 && loopCounter > 3) {
+    Serial.println("Going to deep sleep...");
+    ESP.deepSleep(DEEP_SLEEP_MICROSECONDS);
+  }
 }
