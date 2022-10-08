@@ -20,3 +20,13 @@ const char *ARDUINO_DEVICE_SECRET_KEY = "device-secret-key-from-arduino-iot-clou
 // This is the InfluxDB token for the server (outdoor temperature)
 // Set this only in case you use InfluxDB
 const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";
+
+// ESPhome relays: No relays
+const int RELAYS_COUNT = 0;
+RelayController RELAYS[RELAYS_COUNT];
+
+// ESPhome relays: Two relays
+//void relaysSetup() {
+//    RELAYS[0].setData("http://relay_s01.local/switch/s01_relay/", "http_api_username", "http_api_password");
+//    RELAYS[1].setData("http://relay_s01.local/switch/s02_relay/", "http_api_username", "http_api_password");
+//}

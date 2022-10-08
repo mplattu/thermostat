@@ -1,6 +1,8 @@
 #include <OneWire.h>
 #include <ArduinoOTA.h>
 
+#include "../lib/relayController.h"
+
 #include "../../include/settings.cpp"
 #include "../include/server_settings.cpp"
 
@@ -20,6 +22,8 @@
     ESP8266WiFiMulti wifiMulti;
   #endif
 #endif
+
+    #include <ESP8266WiFi.h>
 
 #include "../../lib/tempDs18b20.cpp"
 #include "../lib/tempSensorListener.cpp"
@@ -68,21 +72,21 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
 
-#ifdef ARDUINO_IOT_CLOUD
+//#ifdef ARDUINO_IOT_CLOUD
   setupArduinoCloud();
-#else
-  Serial.println("Connecting to WiFi");
+//#else
+  Serial.print("Connecting to WiFi...");
   WiFi.mode(WIFI_STA);
-  wifiMulti.addAP(WIFI_SSID, WIFI_PASS);
-  while (wifiMulti.run() != WL_CONNECTED) {
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
-    delay(500);
+    delay(1000);
   }
   Serial.println("Connected");
 
   forceHeatingOff = false;
   forceHeatingOn = false;
-#endif
+//#endif
 
 #ifdef INFLUX_DB
   Serial.print("Initialising InfluxDbTalker...");
@@ -99,6 +103,18 @@ void setup() {
   }
 
   tempSensorListener.begin();
+
+  relaysSetup();
+  Serial.print("Initialising relays...");
+  for (int n=0; n<RELAYS_COUNT; n++) {
+    if (RELAYS[n].begin()) {
+      Serial.print("OK ");
+    }
+    else {
+      Serial.print("Error ");
+    }
+  }
+  Serial.println("done");
 }
 
 void turnHeatingOff(bool forced) {
@@ -106,6 +122,16 @@ void turnHeatingOff(bool forced) {
   if (forced) {
     Serial.print(" (forced)");
   }
+
+  for (int n=0; n<RELAYS_COUNT; n++) {
+    if (RELAYS[n].off()) {
+      Serial.print(" OK");
+    }
+    else {
+      Serial.print(" Error");
+    }
+  }
+
   Serial.println();
 }
 
@@ -114,19 +140,33 @@ void turnHeatingOn(bool forced) {
   if (forced) {
     Serial.print(" (forced)");
   }
+
+  for (int n=0; n<RELAYS_COUNT; n++) {
+    if (RELAYS[n].on()) {
+      Serial.print(" OK");
+    }
+    else {
+      Serial.print(" Error");
+    }
+  }
+
   Serial.println();
 }
 
 // the loop function runs over and over again forever
 void loop() {
+  Serial.println(F("-------------Loop starts"));
+
   MDNS.update();
   ArduinoOTA.handle();
 
   digitalWrite(LED_PIN, LOW);
 #ifdef ARDUINO_IOT_CLOUD
+  int freeHeapArduinoBefore = system_get_free_heap_size();
   Serial.print("Updating ArduinoCloud...");
   ArduinoCloud.update();
-  Serial.println("Updated");
+  Serial.print("Updated ");
+  int freeHeapArduinoAfter = system_get_free_heap_size();
 #else
   delay(1000);
 #endif
@@ -142,6 +182,7 @@ void loop() {
   Serial.print("Average indoor temperature: ");
   Serial.println(tempIndoor);
 
+  int freeHeapRelaysBefore = system_get_free_heap_size();
   if (forceHeatingOff == 1) {
     turnHeatingOff(true);
   } else if (forceHeatingOn == 1) {
@@ -151,6 +192,7 @@ void loop() {
   } else {
     turnHeatingOff(false);
   }
+  int freeHeapRelaysAfter = system_get_free_heap_size();
 
 #ifdef INFLUX_DB
   if (!influxDbTalker->report("temp", tempOutdoor)) {
@@ -158,4 +200,15 @@ void loop() {
     Serial.println(influxDbTalker->getLastErrorMessage());
   }
 #endif
+
+  Serial.print("Arduino used memory: ");
+  Serial.println(freeHeapArduinoAfter - freeHeapArduinoBefore);
+
+  Serial.print("Relays used memory: ");
+  Serial.println(freeHeapRelaysAfter - freeHeapRelaysBefore);
+
+  Serial.print("Loop ends: ");
+  Serial.println(system_get_free_heap_size());
+
+  delay(1000);
 }
