@@ -55,6 +55,26 @@ bool InfluxDbTalker::report(char* fieldName, float value) {
     return true;
 }
 
+bool InfluxDbTalker::report(char* fieldName, String value) {
+    if (!this->influxDbClientInitialised) {
+        this->lastErrorMessage = String("InfluxDbTalker has not been initialised");
+        return false;
+    }
+
+    Point influxDbSensor = Point(this->sensorName.c_str());
+
+    influxDbSensor.clearFields();
+    influxDbSensor.addField(fieldName, value);
+    this->influxDbClient->pointToLineProtocol(influxDbSensor);
+    if (!this->influxDbClient->writePoint(influxDbSensor)) {
+        this->lastErrorMessage = String(this->influxDbClient->getLastErrorMessage());
+        return false;
+    }
+
+    this->lastErrorMessage = String("");
+    return true;
+}
+
 String InfluxDbTalker::getLastErrorMessage() {
     return this->lastErrorMessage;
 }

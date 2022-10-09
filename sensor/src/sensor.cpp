@@ -116,6 +116,10 @@ void loop() {
     Serial.print("InfluxDB write failed: ");
     Serial.println(influxDbTalker->getLastErrorMessage());
   }
+  if (!influxDbTalker->report("ipv4", WiFi.localIP().toString())) {
+    Serial.print("InfluxDB write failed (reporting ipv4): ");
+    Serial.println(influxDbTalker->getLastErrorMessage());
+  }
 #endif
 
   loopCounter++;

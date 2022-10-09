@@ -24,6 +24,7 @@ public:
         );
     bool begin();
     bool report(char* fieldName, float value);
+    bool report(char* fieldName, String value);
     String getLastErrorMessage();
 private:
     InfluxDBClient *influxDbClient;

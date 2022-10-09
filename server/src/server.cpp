@@ -196,7 +196,11 @@ void loop() {
 
 #ifdef INFLUX_DB
   if (!influxDbTalker->report("temp", tempOutdoor)) {
-    Serial.print("InfluxDB write failed: ");
+    Serial.print("InfluxDB write failed (reporting temp): ");
+    Serial.println(influxDbTalker->getLastErrorMessage());
+  }
+  if (!influxDbTalker->report("ipv4", WiFi.localIP().toString())) {
+    Serial.print("InfluxDB write failed (reporting ipv4): ");
     Serial.println(influxDbTalker->getLastErrorMessage());
   }
 #endif
