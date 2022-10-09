@@ -72,9 +72,10 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
 
-//#ifdef ARDUINO_IOT_CLOUD
+#ifdef ARDUINO_IOT_CLOUD
   setupArduinoCloud();
-//#else
+#endif
+
   Serial.print("Connecting to WiFi...");
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -86,7 +87,6 @@ void setup() {
 
   forceHeatingOff = false;
   forceHeatingOn = false;
-//#endif
 
 #ifdef INFLUX_DB
   Serial.print("Initialising InfluxDbTalker...");
