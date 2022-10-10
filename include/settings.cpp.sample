@@ -16,3 +16,11 @@ const char *INFLUXDB_BUCKET = "influxdb-bucket";
 // The device-specific InfluxDB token (INFLUXDB_TOKEN) is set in
 //  * sensor/src/sensor_settings.cpp
 //  * server/src/server_settings.cpp
+
+// Set your sensor timezone for NTP connection
+// This is required if your server connections are secured (https)
+// You can set TZ here for all sensors and server or individually at
+// * server/include/server_settings.cpp
+// * sensor/include/sensor_settings.cpp
+// Timezone strings: https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+//#define TZ_INFO "UTC+2"

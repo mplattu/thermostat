@@ -72,6 +72,10 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+#ifdef TZ_INFO
+ timeSync(TZ_INFO, "pool.ntp.org");
+#endif
+
   broadcastAddress = getBroadcastAddress();
   Serial.print("Broadcast address: ");
   Serial.println(broadcastAddress);

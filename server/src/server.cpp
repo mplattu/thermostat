@@ -45,6 +45,10 @@ float tempOutdoor;
 bool forceHeatingOn;
 bool forceHeatingOff;
 
+void dumpMemoryStatus() {
+  Serial.printf_P(PSTR("Free_heap %d, max_alloc_heap %d, heap_fragmentation  %d\n"), ESP.getFreeHeap(), ESP.getMaxFreeBlockSize(), ESP.getHeapFragmentation());
+}
+
 #ifdef ARDUINO_IOT_CLOUD
 WiFiConnectionHandler ArduinoIoTPreferredConnection(WIFI_SSID, WIFI_PASS);
 
@@ -76,59 +80,68 @@ void setup() {
   setupArduinoCloud();
 #endif
 
-  Serial.print("Connecting to WiFi...");
+  Serial.print(F("Connecting to WiFi..."));
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(1000);
   }
-  Serial.println("Connected");
+  Serial.println(F("Connected"));
+
+#ifdef TZ_INFO
+  timeSync(TZ_INFO, "pool.ntp.org");
+#endif
 
   forceHeatingOff = false;
   forceHeatingOn = false;
 
+  dumpMemoryStatus();
+
 #ifdef INFLUX_DB
-  Serial.print("Initialising InfluxDbTalker...");
+  Serial.print(F("Initialising InfluxDbTalker..."));
   influxDbTalker = new InfluxDbTalker(SERVER_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET);
-  influxDbTalker->begin();
-  Serial.println("OK");
+  if (!influxDbTalker->begin()) {
+    Serial.println(influxDbTalker->getLastErrorMessage());
+    delay(5000);
+  }
+  Serial.println(F("OK"));
 #endif
   
   if (MDNS.begin(SERVER_NAME)) {
-    Serial.println("Started mDNS");
+    Serial.println(F("Started mDNS"));
   }
   else {
-    Serial.println("Failed to start mDNS");
+    Serial.println(F("Failed to start mDNS"));
   }
 
   tempSensorListener.begin();
 
   relaysSetup();
-  Serial.print("Initialising relays...");
+  Serial.print(F("Initialising relays..."));
   for (int n=0; n<RELAYS_COUNT; n++) {
     if (RELAYS[n].begin()) {
-      Serial.print("OK ");
+      Serial.print(F("OK "));
     }
     else {
-      Serial.print("Error ");
+      Serial.print(F("Error "));
     }
   }
-  Serial.println("done");
+  Serial.println(F("done"));
 }
 
 void turnHeatingOff(bool forced) {
-  Serial.print("Turning heating off");
+  Serial.print(F("Turning heating off"));
   if (forced) {
-    Serial.print(" (forced)");
+    Serial.print(F(" (forced)"));
   }
 
   for (int n=0; n<RELAYS_COUNT; n++) {
     if (RELAYS[n].off()) {
-      Serial.print(" OK");
+      Serial.print(F(" OK"));
     }
     else {
-      Serial.print(" Error");
+      Serial.print(F(" Error"));
     }
   }
 
@@ -136,17 +149,17 @@ void turnHeatingOff(bool forced) {
 }
 
 void turnHeatingOn(bool forced) {
-  Serial.print("Turning heating on");
+  Serial.print(F("Turning heating on"));
   if (forced) {
     Serial.print(" (forced)");
   }
 
   for (int n=0; n<RELAYS_COUNT; n++) {
     if (RELAYS[n].on()) {
-      Serial.print(" OK");
+      Serial.print(F(" OK"));
     }
     else {
-      Serial.print(" Error");
+      Serial.print(F(" Error"));
     }
   }
 
@@ -174,12 +187,12 @@ void loop() {
  
   // Reads temperature
   tempOutdoor = outdoorTemperatureSensor.getTemperatureCelsius();
-  Serial.print("Outdoor temperature: ");
+  Serial.print(F("Outdoor temperature: "));
   Serial.println(tempOutdoor);
 
   tempSensorListener.readMessages();
   tempIndoor = tempSensorListener.getAverageTemperature();
-  Serial.print("Average indoor temperature: ");
+  Serial.print(F("Average indoor temperature: "));
   Serial.println(tempIndoor);
 
   int freeHeapRelaysBefore = system_get_free_heap_size();
@@ -196,22 +209,24 @@ void loop() {
 
 #ifdef INFLUX_DB
   if (!influxDbTalker->report("temp", tempOutdoor)) {
-    Serial.print("InfluxDB write failed (reporting temp): ");
+    Serial.print(F("InfluxDB write failed (reporting temp): "));
     Serial.println(influxDbTalker->getLastErrorMessage());
   }
   if (!influxDbTalker->report("ipv4", WiFi.localIP().toString())) {
-    Serial.print("InfluxDB write failed (reporting ipv4): ");
+    Serial.print(F("InfluxDB write failed (reporting ipv4): "));
     Serial.println(influxDbTalker->getLastErrorMessage());
   }
 #endif
 
-  Serial.print("Arduino used memory: ");
+#ifdef ARDUINO_IOT_CLOUD
+  Serial.print(F("Arduino used memory: "));
   Serial.println(freeHeapArduinoAfter - freeHeapArduinoBefore);
+#endif
 
-  Serial.print("Relays used memory: ");
+  Serial.print(F("Relays used memory: "));
   Serial.println(freeHeapRelaysAfter - freeHeapRelaysBefore);
 
-  Serial.print("Loop ends: ");
+  Serial.print(F("Loop ends: "));
   Serial.println(system_get_free_heap_size());
 
   delay(1000);

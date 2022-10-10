@@ -30,3 +30,9 @@ RelayController RELAYS[RELAYS_COUNT];
 //    RELAYS[0].setData("http://relay_s01.local/switch/s01_relay/", "http_api_username", "http_api_password");
 //    RELAYS[1].setData("http://relay_s01.local/switch/s02_relay/", "http_api_username", "http_api_password");
 //}
+
+// Set your sensor timezone for NTP connection
+// This is required if your server connections are secured (https)
+// You can set TZ here or at global include/settings.cpp
+// Timezone strings: https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+//#define TZ_INFO "UTC+2"
