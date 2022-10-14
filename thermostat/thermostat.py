@@ -4,7 +4,6 @@ import os
 from Logger import Logger
 from Settings import Settings
 from TemperatureMessages import TemperatureMessages
-from TemperatureFMI import TemperatureFMI
 from ESPCommander import ESPCommander
 
 logger = Logger()
@@ -24,24 +23,31 @@ bcast_ip = ""
 if settings.get_environ('SENSOR_BCAST_IP') != "":
     bcast_ip = settings.get_environ('SENSOR_BCAST_IP', False)
 
-room_temp_meter = TemperatureMessages(3490, bcast_ip)
+sensor_names_indoor = settings.get_environ_as_list('SENSOR_INDOOR', True)
+sensor_names_outdoor = settings.get_environ_as_list('SENSOR_OUTDOOR', True)
 
-# Gather temperature readings for 30 seconds
-room_temp = room_temp_meter.get_temperature(room_temp_meter.gather_messages(30))
-if room_temp != None:
-    logger.debug('Room temperature: %.2f' % room_temp)
+temperature_message_listener = TemperatureMessages(3490, bcast_ip)
+
+# Gather indoor temperature readings for 30 seconds
+temp_indoor = temperature_message_listener.get_temperature(
+        temperature_message_listener.gather_messages(30, sensor_names_indoor)
+    )
+if temp_indoor != None:
+    logger.debug('Indoor temperature: %.2f' % temp_indoor)
 else:
-    logger.print('Did not get room temperature')
+    logger.print('Did not get indoor temperature')
 
-outdoor_temp_meter = TemperatureFMI(settings.get_environ('THERMOSTAT_FMI_URL', True))
-outdoor_temp = outdoor_temp_meter.get_temperature()
-if outdoor_temp != None:
-    logger.debug('Outdoor temperature: %.2f' % outdoor_temp)
+# Gather outdoor temperature readings for 30 seconds
+temp_outdoor = temperature_message_listener.get_temperature(
+        temperature_message_listener.gather_messages(30, sensor_names_outdoor)
+    )
+if temp_outdoor != None:
+    logger.debug('Outdoor temperature: %.2f' % temp_outdoor)
 else:
     logger.print('Did not get outdoor temperature')
 
 temp_diff = float(settings.get_environ('THERMOSTAT_TEMP_DIFF', True))
-target_temp = outdoor_temp + temp_diff
+target_temp = temp_outdoor + temp_diff
 logger.debug('Target temperature: %.2f' % target_temp)
 
 max_temp = None
@@ -63,11 +69,11 @@ elif (forced_relay_position == False):
     # Forced off
     esp_commander.relay_off()
     relay_status = 'OFF (Forced)'
-elif (max_temp is not None and room_temp > max_temp):
+elif (max_temp is not None and temp_indoor > max_temp):
     # Max temp set and reached
     esp_commander.relay_off()
     relay_status = 'OFF (Over max)'
-elif (target_temp < room_temp):
+elif (target_temp < temp_indoor):
     # Too warm inside
     esp_commander.relay_off()
     relay_status = 'OFF'
@@ -78,4 +84,4 @@ else:
 
 logger.debug(relay_status)
 
-logger.print('CSV\t%s\t%.2f\t%.2f\t%.2f\t%s' % (logger.get_timestamp(), room_temp, outdoor_temp, target_temp, relay_status))
+logger.print('CSV\t%s\t%.2f\t%.2f\t%.2f\t%s' % (logger.get_timestamp(), temp_indoor, temp_outdoor, target_temp, relay_status))

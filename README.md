@@ -69,8 +69,11 @@ application as environment vars. Here is a list of variables:
    list of strings
  * `RELAY_PASSWORD` API password for the device. Type: comma-separated
    list of strings
- * `THERMOSTAT_FMI_URL` URL to the [FMI WFS API](https://en.ilmatieteenlaitos.fi/open-data-manual-fmi-wfs-services)
-   (e.g. [this](http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::multipointcoverage&place=raseborg&parameters=Temperature) - check the nearest municipality and edit parameter `place=xxx`). Type: string
+ * `SENSOR_INDOOR` Comma-separated list of indoor temperature sensors. These names refer to
+   the names broadcasted by the temperature sensors (see above). Type: comma-separated list
+   of strings
+ * `SENSOR_OUTDOOR` Similair comma-separated list of outdoor temperature sensors. Tyoe:
+   comma-separated list of strings
  * `THERMOSTAT_FORCE_ON` If contains a value (e.g. `yes`) the relay is forced
    ON/closed to turn the heating on regardless of the temperatures. Type: string
  * `THERMOSTAT_FORCE_OFF` If contains a value (e.g. `yes`) the relay is forced

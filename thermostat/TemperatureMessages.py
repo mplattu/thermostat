@@ -13,7 +13,7 @@ class TemperatureMessages:
         self.socket.bind((bind_ip, udp_port))
         self.socket.setblocking(0)
 
-    def gather_messages(self, wait_time):
+    def gather_messages(self, wait_time, accepted_sensor_names):
         start_time = int(time.time())
 
         messages = {}
@@ -25,8 +25,9 @@ class TemperatureMessages:
                 data_arr = str(data_packet, encoding='utf-8').split(':', 2)
                 sensor = data_arr[0]
                 temperature = float(data_arr[1])
-                messages[sensor] = float(temperature)
-                self.logger.debug('Got temperature from sensor "%s": %f' % (sensor, temperature))
+                if sensor in accepted_sensor_names:
+                    messages[sensor] = float(temperature)
+                    self.logger.debug('Got temperature from sensor "%s": %f' % (sensor, temperature))
 
         return messages
 

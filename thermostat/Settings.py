@@ -21,6 +21,11 @@ class Settings:
 
         return env_value
 
+    # get_environ_as_list() returns an comma-separated environment string value as a list
+    def get_environ_as_list(self, name, is_required=False):
+        env_string = self.get_environ(name, is_required)
+        return env_string.split(',')
+
     def environ_is_true(self, name, is_required=False):
         env_value = self.get_environ(name, is_required).lower()
 
