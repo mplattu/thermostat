@@ -49,9 +49,9 @@ if settings.get_environ('THERMOSTAT_TEMP_MAX', False):
     max_temp = float(settings.get_environ('THERMOSTAT_TEMP_MAX', False))
 
 esp_commander = ESPCommander(
-    settings.get_environ('THERMOSTAT_DEVICE', True),
-    settings.get_environ('THERMOSTAT_DEVICE_PASSWORD', True),
-    settings.get_environ('THERMOSTAT_DEVICE_KEY', True)
+    settings.get_environ('RELAY_NAME', True),
+    settings.get_environ('RELAY_PASSWORD', True),
+    settings.get_environ('RELAY_KEY', True)
 )
 
 relay_status = 'n/a'
