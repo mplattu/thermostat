@@ -4,6 +4,9 @@ set_current_to_sensor_1:
 set_current_to_sensor_2:
 	ln -sf sensor_settings_sensor2.cpp include/sensor_settings.cpp
 
+set_current_to_outdoor:
+	ln -sf sensor_settings_outdoor.cpp include/sensor_settings.cpp
+
 set_current_to_sensor_test:
 	ln -sf sensor_settings_test.cpp include/sensor_settings.cpp
 
@@ -17,11 +20,15 @@ build_sensor_1: set_current_to_sensor_1 build_current
 
 build_sensor_2: set_current_to_sensor_2 build_current
 
+build_sensor_outdoor: set_current_to_outdoor build_current
+
 build_sensor_test: set_current_to_sensor_test build_current
 
 upload_sensor_1: set_current_to_sensor_1 upload_current
 
 upload_sensor_2: set_current_to_sensor_2 upload_current
+
+upload_sensor_outdoor: set_current_to_outdoor upload_current
 
 upload_sensor_test: set_current_to_sensor_test upload_current
 
