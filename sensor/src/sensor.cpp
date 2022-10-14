@@ -82,7 +82,7 @@ void setup() {
 
 #ifdef INFLUX_DB
   Serial.print("Initialising InfluxDbTalker...");
-  influxDbTalker = new InfluxDbTalker(SENSOR_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET);
+  influxDbTalker = new InfluxDbTalker(SENSOR_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
   influxDbTalker->begin();
   Serial.println("OK");
 #endif

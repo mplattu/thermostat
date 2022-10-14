@@ -20,9 +20,11 @@ public:
             const char *influxDbUrl,
             const char *influxDbToken,
             const char *influxDbOrg,
-            const char *influxDbBucket
+            const char *influxDbBucket,
+            const char *influxDbServerCertSha1Fingerprint
         );
     bool begin();
+    String getServerUrl();
     bool report(char* fieldName, float value);
     bool report(char* fieldName, String value);
     String getLastErrorMessage();

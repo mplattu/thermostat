@@ -1,3 +1,9 @@
+#ifdef DEBUG_ESP_PORT
+#define DEBUG_MSG(...) DEBUG_ESP_PORT.printf( __VA_ARGS__ )
+#else
+#define DEBUG_MSG(...)
+#endif
+
 #include <OneWire.h>
 #include <ArduinoOTA.h>
 
@@ -6,9 +12,12 @@
 #include "../../include/settings.cpp"
 #include "../include/server_settings.cpp"
 
+#include <ESP8266WiFiMulti.h>
+ESP8266WiFiMulti wifiMulti;
+
 #ifdef INFLUX_DB
   #include "../../lib/influxDbTalker.h"
-  InfluxDbTalker *influxDbTalker;
+  InfluxDbTalker influxDbTalker(SERVER_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
 #endif
 
 #ifdef ARDUINO_IOT_CLOUD
@@ -22,8 +31,6 @@
     ESP8266WiFiMulti wifiMulti;
   #endif
 #endif
-
-    #include <ESP8266WiFi.h>
 
 #include "../../lib/tempDs18b20.cpp"
 #include "../lib/tempSensorListener.cpp"
@@ -76,14 +83,16 @@ void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
 
+  WiFi.hostname(SERVER_NAME);
+
 #ifdef ARDUINO_IOT_CLOUD
   setupArduinoCloud();
 #endif
 
   Serial.print(F("Connecting to WiFi..."));
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
+  wifiMulti.addAP(WIFI_SSID, WIFI_PASS);
+  while (wifiMulti.run() != WL_CONNECTED) {
     Serial.print(".");
     delay(1000);
   }
@@ -100,12 +109,12 @@ void setup() {
 
 #ifdef INFLUX_DB
   Serial.print(F("Initialising InfluxDbTalker..."));
-  influxDbTalker = new InfluxDbTalker(SERVER_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET);
-  if (!influxDbTalker->begin()) {
-    Serial.println(influxDbTalker->getLastErrorMessage());
+  if (!influxDbTalker.begin()) {
+    Serial.println(influxDbTalker.getLastErrorMessage());
     delay(5000);
   }
-  Serial.println(F("OK"));
+  Serial.print(F("OK, connected to "));
+  Serial.println(influxDbTalker.getServerUrl());
 #endif
   
   if (MDNS.begin(SERVER_NAME)) {
@@ -208,13 +217,17 @@ void loop() {
   int freeHeapRelaysAfter = system_get_free_heap_size();
 
 #ifdef INFLUX_DB
-  if (!influxDbTalker->report("temp", tempOutdoor)) {
-    Serial.print(F("InfluxDB write failed (reporting temp): "));
-    Serial.println(influxDbTalker->getLastErrorMessage());
+ if (wifiMulti.run() != WL_CONNECTED) {
+    Serial.println("Wifi connection lost");
   }
-  if (!influxDbTalker->report("ipv4", WiFi.localIP().toString())) {
+
+  if (!influxDbTalker.report("temp", tempOutdoor)) {
+    Serial.print(F("InfluxDB write failed (reporting temp): "));
+    Serial.println(influxDbTalker.getLastErrorMessage());
+  }
+  if (!influxDbTalker.report("ipv4", WiFi.localIP().toString())) {
     Serial.print(F("InfluxDB write failed (reporting ipv4): "));
-    Serial.println(influxDbTalker->getLastErrorMessage());
+    Serial.println(influxDbTalker.getLastErrorMessage());
   }
 #endif
 
