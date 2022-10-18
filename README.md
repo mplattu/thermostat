@@ -34,7 +34,7 @@ Wemos D1   DS18B20
 * Connect Wemos D1 pins `3,3` and `D7` with 4,7 kOhm resistor
 
 Building:
- 1. Configure your sensor by editing `sensor/include/settings.cpp` (get a template from `sensor/include/settings.cpp.sample`)
+ 1. Configure your sensor by editing `include/settings.cpp` and `sensor/include/settings.cpp` (get the templates from `settings.cpp.sample` files)
  1. Build, upload and execute the firmware:
     ```
     cd sensor
