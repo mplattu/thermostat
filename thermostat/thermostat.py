@@ -5,9 +5,28 @@ from Logger import Logger
 from Settings import Settings
 from TemperatureMessages import TemperatureMessages
 from ESPCommander import ESPCommander
+from InfluxDbWriter import InfluxDbWriter
+
+INFLUXDB_RELAY_VALUES = {
+    "on": 20,
+    "on-forced": 25,
+    "off": 10,
+    "off-forced": 0,
+    "off-over-max": 5
+}
 
 logger = Logger()
 settings = Settings()
+
+# Define InfluxDB (if set)
+influxdb = InfluxDbWriter(
+    "heating",
+    settings.get_environ('INFLUXDB_URL'),
+    settings.get_environ('INFLUXDB_ORG'),
+    settings.get_environ('INFLUXDB_BUCKET'),
+    settings.get_environ('INFLUXDB_TOKEN')
+)
+influxdb_legend = "relay"
 
 # Check for forced relay position
 forced_relay_position = None
@@ -65,22 +84,29 @@ if (forced_relay_position == True):
     # Forced on
     esp_commander.relay_on()
     relay_status = 'ON (Forced)'
+    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on-forced"])
 elif (forced_relay_position == False):
     # Forced off
     esp_commander.relay_off()
     relay_status = 'OFF (Forced)'
+    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-forced"])
 elif (max_temp is not None and temp_indoor > max_temp):
     # Max temp set and reached
     esp_commander.relay_off()
     relay_status = 'OFF (Over max)'
+    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-over-max"])
 elif (target_temp < temp_indoor):
     # Too warm inside
     esp_commander.relay_off()
     relay_status = 'OFF'
+    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off"])
 else:
     # Too cold inside
     esp_commander.relay_on()
     relay_status = 'ON'
+    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on"])
+
+influxdb.close()
 
 logger.debug(relay_status)
 

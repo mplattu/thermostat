@@ -57,11 +57,28 @@ Building:
 ## Configuration
 
 The parameters for the script are given as balenaCloud variables which are shown to the
-application as environment vars. Here is a list of variables:
+application as environment vars.
+
+Essential variables:
+
  * `THERMOSTAT_DELAY_BETWEEN` Delay between execution cycles in seconds. Type: integer
+ * `THERMOSTAT_TEMP_DIFF` The desired temperature difference between outdoor and
+   indoor temperatures. A positive value sets indoor temperature higher than the
+   outdoor temperature. Type: integer
  * `SENSOR_BCAST_IP` Broadcast IP to listen for sensor messages. This should be a
     broadcast IP of your LAN (e.g. 192.168.0.255). If empty, binds to all addresses.
     Type: string
+
+Defining inputs (ESP8266 sensors):
+
+ * `SENSOR_INDOOR` Comma-separated list of indoor temperature sensors. These names refer to
+   the names broadcasted by the temperature sensors (see above). Type: comma-separated list
+   of strings
+ * `SENSOR_OUTDOOR` Similair comma-separated list of outdoor temperature sensors. Tyoe:
+   comma-separated list of strings
+
+Defining outputs (ESPhome relays):
+
  * `RELAY_NAME` ESPhome mDNS device name (e.g. `relay_4.local`). Each device must
    have a key and API password defined. See below. Type: comma-separated
    list of strings
@@ -71,22 +88,28 @@ application as environment vars. Here is a list of variables:
    list of strings
  * `RELAY_PASSWORD` API password for the device. Type: comma-separated
    list of strings
- * `SENSOR_INDOOR` Comma-separated list of indoor temperature sensors. These names refer to
-   the names broadcasted by the temperature sensors (see above). Type: comma-separated list
-   of strings
- * `SENSOR_OUTDOOR` Similair comma-separated list of outdoor temperature sensors. Tyoe:
-   comma-separated list of strings
+
+Optional variables:
+
  * `THERMOSTAT_FORCE_ON` If contains a value (e.g. `yes`) the relay is forced
    ON/closed to turn the heating on regardless of the temperatures. Type: string
  * `THERMOSTAT_FORCE_OFF` If contains a value (e.g. `yes`) the relay is forced
    OFF/open to turn the heating off regardless of the temperatures. Type: string
- * `THERMOSTAT_TEMP_DIFF` The desired temperature difference between outdoor and
-   indoor temperatures. A positive value sets indoor temperature higher than the
-   outdoor temperature. Type: integer
  * `THERMOSTAT_TEMP_MAX` Maximum room temperature. If the indoor temperature raises
    above this limit the relay is always turned off. Type: integer
 
-Defining devices
+InfluxDB variables (optional):
+
+The InfluxDB variables allow the server to send relay status to InfluxDB. By configuring
+this and corresponding sensor variables you can send monitoring data to the defined
+InfluxDB.
+
+ * `INFLUXDB_URL` URL of the InfluxDB server (e.g. `https://your.influxdb:8086`). Type: string
+ * `INFLUXDB_ORG` InfluxDB organisation. Type: string
+ * `INFLUXDB_BUCKET` InfluxDB bucket. Type: string
+ * `INFLUXDB_TOKEN` InfluxDB access token. The server needs write access to the given bucket. Type: string
+
+Defining devices (example):
 
  * One device:
    `RELAY_NAME=relay_1.local RELAY_KEY=relay1_deltaco_sh-p01 RELAY_PASSWORD=relay1apipassword`

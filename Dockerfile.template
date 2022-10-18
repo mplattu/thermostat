@@ -8,7 +8,7 @@ RUN apt-get install -y --no-install-recommends \
   libnss-mdns \
   mdns-scan \
   systemd
-RUN pip3 install aioesphomeapi
+RUN pip3 install aioesphomeapi influxdb-client
 COPY start-thermostat.sh /srv/thermostat/start-thermostat.sh
 COPY thermostat/* /srv/thermostat/thermostat/
 RUN chmod 0755 /srv/thermostat/start-thermostat.sh
