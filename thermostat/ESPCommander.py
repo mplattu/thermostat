@@ -5,7 +5,6 @@ from Logger import Logger
 class ESPCommander:
     def __init__(self, hostnames, passwords, keys):
         self.logger = Logger()
-        self.asyncio_loop = None
 
         self.devices = self.parse_devices(hostnames, passwords, keys)
 
@@ -42,46 +41,41 @@ class ESPCommander:
     def set_test_mode(self, test_mode):
         self.test_mode = test_mode
 
-    async def relay_set_real(self, relay_index, switch_command):
-        hostname = self.devices[relay_index]['hostname']
-        password = self.devices[relay_index]['password']
-        key = self.devices[relay_index]['key']
+    async def relay_send_command(self, hostname, password, key, switch_command):
+        api = aioesphomeapi.APIClient(hostname, 6053, password)
+        await api.connect(login=True)
 
-        cli = aioesphomeapi.APIClient(
-            eventloop = self.asyncio_loop,
-            address = hostname,
-            port = 6053,
-            password = password,
-            keepalive = 0
-        )
-        await asyncio.wait_for(cli.connect(login=True), timeout=10)
-
-        sensors, services = await asyncio.wait_for(cli.list_entities_services(), timeout=10)
+        sensors = await api.list_entities_services()
 
         # Get the integer key for the given key (which is actually an ID)
         key_int = None
-        for this_sensor in sensors:
+        for this_sensor in sensors[0]:
             if this_sensor.object_id == key:
                 self.logger.debug("Device %s has matching object: %s" % (hostname, this_sensor.object_id))
                 key_int = this_sensor.key
             else:
                 self.logger.debug("Device %s has object: %s" % (hostname, this_sensor.object_id))
 
-
         if not key_int:
             self.logger.print("Could not get integer key for device %s object %s" % (hostname, key))
             return
+        
+        await api.switch_command(key_int, switch_command)
+        await api.disconnect()
 
-        await asyncio.wait_for(cli.switch_command(key_int, switch_command), timeout=10)
-        await asyncio.wait_for(cli.disconnect(), timeout=10)
+    def relay_set_real(self, relay_index, switch_command):
+        hostname = self.devices[relay_index]['hostname']
+        password = self.devices[relay_index]['password']
+        key = self.devices[relay_index]['key']
 
-        self.logger.debug("Device %s key %s (%d) was set to: %s" % (hostname, key, key_int, switch_command))
+        relay_command_event_loop = asyncio.get_event_loop()
+        relay_command_event_loop.run_until_complete(self.relay_send_command(hostname, password, key, switch_command))
 
-    async def relay_set_all_real(self, switch_command):
+        self.logger.debug("Device %s key %s was set to: %s" % (hostname, key, switch_command))
+
+    def relay_set_all_real(self, switch_command):
         for idx, val in enumerate(self.devices):
-            await self.relay_set_real(idx, switch_command)
-
-        self.asyncio_loop.stop()
+            self.relay_set_real(idx, switch_command)
 
     def relay_set_all_test(self, switch_command):
         for idx, val in enumerate(self.devices):
@@ -91,9 +85,7 @@ class ESPCommander:
         if self.test_mode:
             self.relay_set_all_test(switch_command)
         else:
-            self.asyncio_loop = asyncio.new_event_loop()
-            self.asyncio_loop.run_until_complete(self.relay_set_all_real(switch_command))
-            self.asyncio_loop.run_forever()
+            self.relay_set_all_real(switch_command)
 
     def relay_on(self):
         self.relay_set(True)
