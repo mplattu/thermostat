@@ -14,8 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/
@@ -129,3 +127,7 @@ dmypy.json
 .pyre/
 
 include/settings.cpp
+sensor/.pio
+sensor/include/sensor_settings*.cpp
+server/.pio
+server/include/server_settings*.cpp

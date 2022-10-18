@@ -1,23 +1,31 @@
-#include <MAX6675_Thermocouple.h>
-#include <Thermocouple.h>
+#include <OneWire.h>
+#include <ArduinoOTA.h>
+
+#include "../../include/settings.cpp"
+#include "../include/sensor_settings.cpp"
+
+#ifdef INFLUX_DB
+  #include <ESP8266WiFiMulti.h>
+  #include "../../lib/influxDbTalker.h"
+  InfluxDbTalker *influxDbTalker;
+#endif
 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <ESP8266mDNS.h>
 
-#include "settings.cpp"
+#include "../../lib/tempDs18b20.cpp"
 
-// MAX6675 connectors and thermocouple object
-#define SCK_PIN D5
-#define CS_PIN D7
-#define SO_PIN D6
-Thermocouple* thermocouple;
+// DS18B20 pin
+#define ONEWIRE_PIN D7
+TempDS18B20 temperatureSensor(ONEWIRE_PIN);
 
 // UDP port to send broadcast (both from and to)
 #define UDP_PORT 3490
 WiFiUDP UDP;
 IPAddress broadcastAddress;
 
-#define LED_PIN BUILTIN_LED
+#define LED_PIN LED_BUILTIN
 
 IPAddress getBroadcastAddress() {
   IPAddress myAddress = WiFi.localIP();
@@ -27,7 +35,7 @@ IPAddress getBroadcastAddress() {
   return myAddress;
 }
 
-void sendMessage(double temperature) {
+void sendMessage(float temperature) {
   String message = String(SENSOR_NAME) + ":" + String(temperature);
   Serial.printf("Sending message: '%s'\n", message.c_str());
 
@@ -41,10 +49,8 @@ void sendMessage(double temperature) {
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
-
-  thermocouple = new MAX6675_Thermocouple(SCK_PIN, CS_PIN, SO_PIN);
 
   Serial.printf("Connecting to WiFi (%s): ", WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -52,10 +58,10 @@ void setup() {
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) {
     delay(100);
-    digitalWrite(BUILTIN_LED, LOW);
+    digitalWrite(LED_PIN, LOW);
     Serial.print(".");
     delay(100);
-    digitalWrite(BUILTIN_LED, HIGH);
+    digitalWrite(LED_PIN, HIGH);
   }
 
   UDP.begin(UDP_PORT);
@@ -66,21 +72,64 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+#ifdef TZ_INFO
+ timeSync(TZ_INFO, "pool.ntp.org");
+#endif
+
   broadcastAddress = getBroadcastAddress();
   Serial.print("Broadcast address: ");
   Serial.println(broadcastAddress);
+
+#ifdef INFLUX_DB
+  Serial.print("Initialising InfluxDbTalker...");
+  influxDbTalker = new InfluxDbTalker(SENSOR_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
+  influxDbTalker->begin();
+  Serial.println("OK");
+#endif
+
+  if (MDNS.begin(SENSOR_NAME)) {
+    Serial.println("Started mDNS");
+  }
+  else {
+    Serial.println("Failed to start mDNS");
+  }
+
+  ArduinoOTA.begin();
 }
 
 // the loop function runs over and over again forever
+unsigned int loopCounter = 0;
+
 void loop() {
+  MDNS.update();
+  ArduinoOTA.handle();
+  
   // Reads temperature
-  const double tempCelsius = thermocouple->readCelsius();
+  const float tempCelsius = temperatureSensor.getTemperatureCelsius();
 
   sendMessage(tempCelsius);
 
-  digitalWrite(BUILTIN_LED, LOW);
+  digitalWrite(LED_PIN, LOW);
   delay(1000);
 
-  digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(LED_PIN, HIGH);
   delay(1000);
+
+#ifdef INFLUX_DB
+  if (!influxDbTalker->report("temp", tempCelsius)) {
+    Serial.print("InfluxDB write failed: ");
+    Serial.println(influxDbTalker->getLastErrorMessage());
+  }
+  if (!influxDbTalker->report("ipv4", WiFi.localIP().toString())) {
+    Serial.print("InfluxDB write failed (reporting ipv4): ");
+    Serial.println(influxDbTalker->getLastErrorMessage());
+  }
+#endif
+
+  loopCounter++;
+
+  if (DEEP_SLEEP_MICROSECONDS > 0 && loopCounter > 3) {
+    Serial.println("Going to deep sleep...");
+    ESP.deepSleep(DEEP_SLEEP_MICROSECONDS);
+  }
 }

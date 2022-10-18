@@ -1,0 +1,26 @@
+// These settings are common for server and sensors
+
+// WiFi name and key
+const char *WIFI_SSID = "yourssid";
+const char *WIFI_PASS = "yourpassword";
+
+// Define INFLUX_DB to compile Influx DB client support
+// In this case you have to set INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG and INFLUXDB_DB_NAME
+#define INFLUX_DB
+
+// These InfluxDB settings are common settings for server and sensors
+const char *INFLUXDB_URL = "influxdb-url";
+const char *INFLUXDB_ORG = "influxdb-org";
+const char *INFLUXDB_BUCKET = "influxdb-bucket";
+
+// The device-specific InfluxDB token (INFLUXDB_TOKEN) is set in
+//  * sensor/src/sensor_settings.cpp
+//  * server/src/server_settings.cpp
+
+// Set your sensor timezone for NTP connection
+// This is required if your server connections are secured (https)
+// You can set TZ here for all sensors and server or individually at
+// * server/include/server_settings.cpp
+// * sensor/include/sensor_settings.cpp
+// Timezone strings: https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+//#define TZ_INFO "UTC+2"

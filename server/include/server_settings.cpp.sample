@@ -1,0 +1,38 @@
+// SERVER_NAME will be used when
+//  * mDNS name SERVER_NAME.local
+//  * communicating to InfluxDB server
+const char *SERVER_NAME = "temp_outdoor";
+
+// Target indoor temperature (added to outdoor temperature)
+// If you want indoor temperature to be outdoor + 5.0 set this to 5.0
+const float INDOOR_TEMP_TARGET = 5.0;
+
+// Define ARDUINO_IOT_CLOUD to compile Arduino IoT Cloud support
+// In this case you have to set ARDUINO_DEVICE_IO and ARDUINO_DEVICE_SECRET_KEY
+#define ARDUINO_IOT_CLOUD
+
+// Arduino IoT Cloud Device ID
+const char *ARDUINO_DEVICE_ID = "device-id-from-arduino-iot-cloud";
+
+// Arduino IoT Cloud Device Secret Key
+const char *ARDUINO_DEVICE_SECRET_KEY = "device-secret-key-from-arduino-iot-cloud";
+
+// This is the InfluxDB token for the server (outdoor temperature)
+// Set this only in case you use InfluxDB
+const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";
+
+// ESPhome relays: No relays
+const int RELAYS_COUNT = 0;
+RelayController RELAYS[RELAYS_COUNT];
+
+// ESPhome relays: Two relays
+//void relaysSetup() {
+//    RELAYS[0].setData("http://relay_s01.local/switch/s01_relay/", "http_api_username", "http_api_password");
+//    RELAYS[1].setData("http://relay_s01.local/switch/s02_relay/", "http_api_username", "http_api_password");
+//}
+
+// Set your sensor timezone for NTP connection
+// This is required if your server connections are secured (https)
+// You can set TZ here or at global include/settings.cpp
+// Timezone strings: https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+//#define TZ_INFO "UTC+2"

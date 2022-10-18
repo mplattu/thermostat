@@ -1,0 +1,18 @@
+// SENSOR_NAME will be used when
+//  * broadcasting the temperature
+//  * mDNS name SERVER_NAME.local
+//  * communicating to InfluxDB server
+const char *SENSOR_NAME = "Sensor X";
+
+// Set this only in case you use InfluxDB
+const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";
+
+// Set this to non-zero if you want to set deep sleep timer
+const unsigned int DEEP_SLEEP_MICROSECONDS = 0;
+//const unsigned int DEEP_SLEEP_MICROSECONDS = 60e6;    // 60 seconds
+
+// Set your sensor timezone for NTP connection
+// This is required if your server connections are secured (https)
+// You can set TZ here or at global include/settings.cpp
+// Timezone strings: https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
+//#define TZ_INFO "UTC+2"
