@@ -13,18 +13,14 @@ class ESPCommander:
     def parse_devices(self, hostnames, passwords, keys):
         devices = []
 
-        hostname_arr = hostnames.split(',')
-        password_arr = passwords.split(',')
-        key_arr = keys.split(',')
-
-        for idx,this_hostname in enumerate(hostname_arr):
+        for idx,this_hostname in enumerate(hostnames):
             try:
-                this_password = password_arr[idx]
+                this_password = passwords[idx]
             except IndexError:
                 this_password = None
 
             try:
-                this_key = key_arr[idx]
+                this_key = keys[idx]
             except IndexError:
                 this_key = None
 

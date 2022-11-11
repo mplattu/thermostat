@@ -131,3 +131,4 @@ sensor/.pio
 sensor/include/sensor_settings*.cpp
 server/.pio
 server/include/server_settings*.cpp
+nordpool.sqlite

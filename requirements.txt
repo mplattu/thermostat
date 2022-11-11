@@ -1,3 +1,4 @@
 aioesphomeapi==10.14.0
 influxdb-client==1.33.0
 cffi==1.15.1
+git+https://github.com/mplattu/nordpool_db@main#egg=nordpool_db
