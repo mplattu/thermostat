@@ -6,6 +6,7 @@ from Settings import Settings
 from TemperatureMessages import TemperatureMessages
 from ESPCommander import ESPCommander
 from InfluxDbWriter import InfluxDbWriter
+from NordPool import NordPool
 
 INFLUXDB_RELAY_VALUES = {
     "on": 20,
@@ -28,6 +29,15 @@ influxdb = InfluxDbWriter(
 )
 influxdb_legend = "relay"
 
+# Define Nord Pool (if set)
+nordpool = None
+if settings.get_environ('NORDPOOL_AREA'):
+    nordpool = NordPool(
+        './nordpool.sqlite',
+        settings.get_environ('NORDPOOL_AREA'),
+        settings.get_environ('NORDPOOL_TZ', True)
+    )
+
 # Check for forced relay position
 forced_relay_position = None
 if settings.environ_is_true('THERMOSTAT_FORCE_ON'):
@@ -49,7 +59,7 @@ temperature_message_listener = TemperatureMessages(3490, bcast_ip)
 
 # Gather indoor temperature readings for 30 seconds
 temp_indoor = temperature_message_listener.get_temperature(
-        temperature_message_listener.gather_messages(30, sensor_names_indoor)
+        temperature_message_listener.gather_messages(30, sensor_names_indoor, 'TEST_TEMP_INDOOR')
     )
 if temp_indoor != None:
     logger.debug('Indoor temperature: %.2f' % temp_indoor)
@@ -58,7 +68,7 @@ else:
 
 # Gather outdoor temperature readings for 30 seconds
 temp_outdoor = temperature_message_listener.get_temperature(
-        temperature_message_listener.gather_messages(30, sensor_names_outdoor)
+        temperature_message_listener.gather_messages(30, sensor_names_outdoor, 'TEST_TEMP_OUTDOOR')
     )
 if temp_outdoor != None:
     logger.debug('Outdoor temperature: %.2f' % temp_outdoor)
@@ -66,6 +76,13 @@ else:
     logger.print('Did not get outdoor temperature')
 
 temp_diff = float(settings.get_environ('THERMOSTAT_TEMP_DIFF', True))
+if nordpool is not None:
+    nordpool.update_nordpool_data()
+    if nordpool.is_cheap(int(settings.get_environ('NORDPOOL_HOURS'))):
+        temp_diff = float(settings.get_environ('THERMOSTAT_TEMP_DIFF_CHEAP', True))
+        logger.debug(f'Nord Pool: using cheap hours temp diff {temp_diff}')
+    else:
+        logger.debug('Nord Pool: We are not in the cheap hours')
 target_temp = temp_outdoor + temp_diff
 logger.debug('Target temperature: %.2f' % target_temp)
 
@@ -74,9 +91,9 @@ if settings.get_environ('THERMOSTAT_TEMP_MAX', False):
     max_temp = float(settings.get_environ('THERMOSTAT_TEMP_MAX', False))
 
 esp_commander = ESPCommander(
-    settings.get_environ('RELAY_NAME', True),
-    settings.get_environ('RELAY_PASSWORD', True),
-    settings.get_environ('RELAY_KEY', True)
+    settings.get_environ_as_list('RELAY_NAME', True),
+    settings.get_environ_as_list('RELAY_PASSWORD', True),
+    settings.get_environ_as_list('RELAY_KEY', True)
 )
 
 relay_status = 'n/a'

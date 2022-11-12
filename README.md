@@ -98,6 +98,19 @@ Optional variables:
  * `THERMOSTAT_TEMP_MAX` Maximum room temperature. If the indoor temperature raises
    above this limit the relay is always turned off. Type: integer
 
+Nord Pool variables (optional):
+
+To give different values to thermostat while the current Nord Pool electricity price is
+low (related to other hours of the day) you can use following variables:
+
+ * `NORDPOOL_AREA` Set this to your Nord Pool area (e.g. `FI`, `EE`). Type: string
+ * `NORDPOOL_TZ` Timezone descriptor which can be given directly to [pytz](https://pythonhosted.org/pytz/).
+   Type: string
+ * `NORDPOOL_HOURS` Defines the number of cheapest hours of the day. Value 5
+   searches five cheapest hours in the current day. Type: integer
+ * `THERMOSTAT_TEMP_DIFF_CHEAP` Overrides the default `THERMOSTAT_TEMP_DIFF` value
+   during the Nord Pool cheap hours. Type: integer
+
 InfluxDB variables (optional):
 
 The InfluxDB variables allow the server to send relay status to InfluxDB. By configuring
@@ -109,12 +122,41 @@ InfluxDB.
  * `INFLUXDB_BUCKET` InfluxDB bucket. Type: string
  * `INFLUXDB_TOKEN` InfluxDB access token. The server needs write access to the given bucket. Type: string
 
+Variables for testing and debugging:
+
+To run Thermostat without real temperature sensors set `SENSOR_INDOOR` and `SENSOR_OUTDOOR` to
+`_test_`. You can set the phony temperature values using environment variables `TEST_TEMP_INDOOR` and
+`TEST_TEMP_OUTDOOR`.
+
+If there are no relays just set empty values to `RELAY_NAME`, `RELAY_KEY` and `RELAY_PASSWORD`.
+
 Defining devices (example):
 
  * One device:
    `RELAY_NAME=relay_1.local RELAY_KEY=relay1_deltaco_sh-p01 RELAY_PASSWORD=relay1apipassword`
  * Two (or more) devices:
    `RELAY_NAME=relay_1.local,relay_2.local RELAY_KEY=relay1_deltaco_sh-p01,relay2_deltaco_sh-p01 RELAY_PASSWORD=relay1apipassword,relay2apipassword`
+
+Nord Pool configuration (example):
+
+The aim of the Nord Pool features is to allow thermostat to heat the house more during the
+cheapers hours of the day and less during the more expensive time slots. This mechanism retrieves
+the Nord Pool price data for the given area and calculates the cheapest hours.
+
+```
+THERMOSTAT_TEMP_DIFF=1
+NORDPOOL_AREA=FI
+NORDPOOL_TZ=EET
+NORDPOOL_HOURS=8
+THERMOSTAT_TEMP_DIFF=5
+```
+
+The above configuration heats the house more during the cheapest eight hours (difference between
+outdoor and indoor temperature should be more than five degrees) and less during the 16 more
+expensive hours.
+
+You should follow the temperatures to find best values for your site. InfluxDB is perfect tool for
+monitoring purposes.
 
 ## Short Balena Local Mode Command Summmary
 

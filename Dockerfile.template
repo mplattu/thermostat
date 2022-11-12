@@ -8,7 +8,8 @@ RUN apt-get install -y --no-install-recommends \
   libnss-mdns \
   mdns-scan \
   systemd \
-  build-essential
+  build-essential \
+  git
 # Install aioesphomeapi requirements from Debian packages instead of PyPi as some
 # required packages needed a lot of stuff to install (gcc, rustc) or did not install at all
 # * cryptography is required by noiseprotocol, which is not available as .deb

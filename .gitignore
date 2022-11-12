@@ -25,6 +25,10 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# virtual environment
+bin/
+lib/python3.8/
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -131,3 +135,4 @@ sensor/.pio
 sensor/include/sensor_settings*.cpp
 server/.pio
 server/include/server_settings*.cpp
+nordpool.sqlite

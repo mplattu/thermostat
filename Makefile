@@ -1,7 +1,29 @@
-test-run:
-	THERMOSTAT_FMI_URL="http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::multipointcoverage&place=raseborg&parameters=Temperature" \
-	THERMOSTAT_TEMP_DIFF=5 \
-	THERMOSTAT_DEVICE=device \
-	THERMOSTAT_DEVICE_PASSWORD=device.password \
-	THERMOSTAT_DEVICE_KEY=device.key \
-	python3 thermostat/thermostat.py --owfs test/owfs --test_mode
+test-run-nordpool-cheap:
+	RELAY_NAME= \
+	RELAY_KEY= \
+	RELAY_PASSWORD= \
+	THERMOSTAT_TEMP_DIFF=2 \
+	SENSOR_INDOOR=_test_ \
+	SENSOR_OUTDOOR=_test_ \
+	TEST_TEMP_INDOOR=14 \
+	TEST_TEMP_OUTDOOR=4 \
+	NORDPOOL_AREA=FI \
+	NORDPOOL_TZ=EET \
+	NORDPOOL_HOURS=0 \
+	THERMOSTAT_TEMP_DIFF_CHEAP=5 \
+	python3 thermostat/thermostat.py
+
+test-run-nordpool-expensive:
+	RELAY_NAME= \
+	RELAY_KEY= \
+	RELAY_PASSWORD= \
+	THERMOSTAT_TEMP_DIFF=2 \
+	SENSOR_INDOOR=_test_ \
+	SENSOR_OUTDOOR=_test_ \
+	TEST_TEMP_INDOOR=14 \
+	TEST_TEMP_OUTDOOR=4 \
+	NORDPOOL_AREA=FI \
+	NORDPOOL_TZ=EET \
+	NORDPOOL_HOURS=0 \
+	THERMOSTAT_TEMP_DIFF_CHEAP=5 \
+	python3 thermostat/thermostat.py

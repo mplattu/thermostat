@@ -1,3 +1,4 @@
+import os
 import select
 import time
 from socket import *
@@ -13,7 +14,7 @@ class TemperatureMessages:
         self.socket.bind((bind_ip, udp_port))
         self.socket.setblocking(0)
 
-    def gather_messages(self, wait_time, accepted_sensor_names):
+    def gather_messages(self, wait_time, accepted_sensor_names, test_sensor_environment_variable = None):
         start_time = int(time.time())
 
         messages = {}
@@ -29,6 +30,9 @@ class TemperatureMessages:
                     messages[sensor] = float(temperature)
                     self.logger.debug('Got temperature from sensor "%s": %f' % (sensor, temperature))
 
+        if accepted_sensor_names == ['_test_']:
+            messages['_test_'] = float(os.environ[test_sensor_environment_variable])
+        
         return messages
 
     def get_temperature(self, sensor_values):
