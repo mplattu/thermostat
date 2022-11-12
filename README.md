@@ -34,11 +34,13 @@ Wemos D1   DS18B20
 * Connect Wemos D1 pins `3,3` and `D7` with 4,7 kOhm resistor
 
 Building:
- 1. Configure your sensor by editing `include/settings.cpp` and `sensor/include/settings.cpp` (get the templates from `settings.cpp.sample` files)
+ 1. Configure your sensor by editing `include/settings.cpp` and `sensor/include/settings.cpp` (get the templates from `settings.cpp.sample` files).
+    The best practice is to create sensor-specific file `sensor/include/settings_mysensor.cpp` and activate this with `sensor/set_current_sensor.sh`.
  1. Build, upload and execute the firmware:
     ```
     cd sensor
-    make run
+    ./set_current_sensor.sh mysensor
+    make upload
     ```
  1. Check Wemos D1 led:
   * Blinking quickly (200 ms cycle): trying to connect to WiFi
