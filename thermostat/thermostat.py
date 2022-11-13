@@ -83,6 +83,15 @@ if nordpool is not None:
         logger.debug(f'Nord Pool: using cheap hours temp diff {temp_diff}')
     else:
         logger.debug('Nord Pool: We are not in the cheap hours')
+
+    price_rank = nordpool.get_current_price_rank()
+    if price_rank is not None:
+        influxdb.write_value('nordpool_price_rank', price_rank)
+    
+    price_value = nordpool.get_current_price_value()
+    if price_value is not None:
+        influxdb.write_value('nordpool_price', price_value)
+
 target_temp = temp_outdoor + temp_diff
 logger.debug('Target temperature: %.2f' % target_temp)
 

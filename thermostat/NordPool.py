@@ -22,12 +22,20 @@ class NordPool:
             self.npdb.update_data(prices_spot.hourly(areas=[self.AREA], end_date=self.TIMEZONE.localize(datetime.today()+timedelta(days=1))))
 
     def is_cheap(self, cheap_hours):
-        dt_today_start = self.TIMEZONE.localize(datetime.strptime(datetime.today().strftime('%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%M:%S'))
-        dt_today_end =  self.TIMEZONE.localize(datetime.strptime(datetime.today().strftime('%Y-%m-%d 23:59:59'), '%Y-%m-%d %H:%M:%S'))
-
-        price_rank, _ = self.npdb.get_price_rank(self.AREA, dt_today_start, dt_today_end, self.TIMEZONE.localize(datetime.today()))
+        price_rank = self.get_current_price_rank()
 
         if price_rank is None:
             return False
 
         return price_rank <= cheap_hours
+
+    def get_current_price_rank(self):
+        dt_today_start = self.TIMEZONE.localize(datetime.strptime(datetime.today().strftime('%Y-%m-%d 00:00:00'), '%Y-%m-%d %H:%M:%S'))
+        dt_today_end =  self.TIMEZONE.localize(datetime.strptime(datetime.today().strftime('%Y-%m-%d 23:59:59'), '%Y-%m-%d %H:%M:%S'))
+
+        price_rank, _ = self.npdb.get_price_rank(self.AREA, dt_today_start, dt_today_end, self.TIMEZONE.localize(datetime.today()))
+
+        return price_rank
+
+    def get_current_price_value(self):
+        return self.npdb.get_price_value(self.AREA, self.TIMEZONE.localize(datetime.today()))
