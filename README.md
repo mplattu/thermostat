@@ -130,6 +130,9 @@ To run Thermostat without real temperature sensors set `SENSOR_INDOOR` and `SENS
 `_test_`. You can set the phony temperature values using environment variables `TEST_TEMP_INDOOR` and
 `TEST_TEMP_OUTDOOR`.
 
+Similair magic `INFLUXDB_URL` value `_test_` puts InfluxDB reporter to test mode and just
+prints the values to STDERR.
+
 If there are no relays just set empty values to `RELAY_NAME`, `RELAY_KEY` and `RELAY_PASSWORD`.
 
 Defining devices (example):
