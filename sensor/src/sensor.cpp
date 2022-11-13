@@ -50,7 +50,9 @@ void sendMessage(float temperature) {
 // the setup function runs once when you press reset or power the board
 void setup() {
   Serial.begin(115200);
+#ifdef LED_BLINK
   pinMode(LED_PIN, OUTPUT);
+#endif
 
   Serial.printf("Connecting to WiFi (%s): ", WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -58,10 +60,14 @@ void setup() {
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED) {
     delay(100);
+#ifdef LED_BLINK
     digitalWrite(LED_PIN, LOW);
+#endif
     Serial.print(".");
     delay(100);
+#ifdef LED_BLINK
     digitalWrite(LED_PIN, HIGH);
+#endif
   }
 
   UDP.begin(UDP_PORT);
@@ -109,10 +115,14 @@ void loop() {
 
   sendMessage(tempCelsius);
 
+#ifdef LED_BLINK
   digitalWrite(LED_PIN, LOW);
+#endif
   delay(1000);
 
+#ifdef LED_BLINK
   digitalWrite(LED_PIN, HIGH);
+#endif
   delay(1000);
 
 #ifdef INFLUX_DB

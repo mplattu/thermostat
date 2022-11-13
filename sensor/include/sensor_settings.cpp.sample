@@ -16,3 +16,6 @@ const unsigned int DEEP_SLEEP_MICROSECONDS = 0;
 // You can set TZ here or at global include/settings.cpp
 // Timezone strings: https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
 //#define TZ_INFO "UTC+2"
+
+// Set this if you want to blink internal LED
+#define LED_BLINK
