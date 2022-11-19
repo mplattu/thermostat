@@ -57,7 +57,10 @@ void setup() {
   Serial.printf("Connecting to WiFi (%s): ", WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
-  // Wait for connection
+  // Wait 60 seconds for a connection
+  unsigned int secondsSinceBoot = millis() / 1000;
+  unsigned int secondsSinceBootToReboot = secondsSinceBoot + 60;
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(100);
 #ifdef LED_BLINK
@@ -68,6 +71,11 @@ void setup() {
 #ifdef LED_BLINK
     digitalWrite(LED_PIN, HIGH);
 #endif
+    secondsSinceBoot = millis() / 1000;
+    if (secondsSinceBoot > secondsSinceBootToReboot) {
+      Serial.printf("\n\nNo WiFi found, rebooting...");
+      ESP.restart();
+    }
   }
 
   UDP.begin(UDP_PORT);
