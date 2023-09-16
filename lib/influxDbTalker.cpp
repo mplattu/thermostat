@@ -13,8 +13,10 @@ InfluxDbTalker::InfluxDbTalker(
         const char *influxDbBucket,
         const char *influxDbServerCertSha1Fingerprint
     ) {
+    
     this->sensorName = String(influxDbSensorName);
     this->influxDbClient = new InfluxDBClient(influxDbUrl, influxDbOrg, influxDbBucket, influxDbToken, influxDbServerCertSha1Fingerprint);
+    this->influxDbClient->setInsecure();
     this->lastErrorMessage = String("");
     this->influxDbClientInitialised = true;
 }
