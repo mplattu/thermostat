@@ -165,12 +165,12 @@ void loop() {
   delay(1000);
 
 #ifdef INFLUX_DB
-  if (!influxDbTalker->report("temp", tempCelsius)) {
+  if (!influxDbTalker->report((char *) "temp", tempCelsius)) {
     Serial.print("InfluxDB write failed: ");
     Serial.println(influxDbTalker->getLastErrorMessage());
     showError("InfluxDB write error when reporting temp", 4);
   }
-  if (!influxDbTalker->report("ipv4", WiFi.localIP().toString())) {
+  if (!influxDbTalker->report((char *) "ipv4", WiFi.localIP().toString())) {
     Serial.print("InfluxDB write failed (reporting ipv4): ");
     Serial.println(influxDbTalker->getLastErrorMessage());
     showError("InfluxDB write error when reporting IPv4", 5);
