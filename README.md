@@ -56,6 +56,12 @@ Building:
     E..*.y........1e..1.........Sensor 1:24.75....
     ```
 
+### Error Codes
+
+In case of error the internal led is on for 5 seconds. After this it shows the error
+code with 0,5 second blinks. See `grep showError sensor/src/sensor.cpp` for error
+codes.
+
 ## Configuration
 
 The parameters for the script are given as balenaCloud variables which are shown to the

@@ -27,6 +27,43 @@ IPAddress broadcastAddress;
 
 #define LED_PIN LED_BUILTIN
 
+void ledOn() {
+#ifdef LED_BLINK
+  digitalWrite(LED_PIN, LOW);
+#else
+  digitalWrite(LED_PIN, HIGH);
+#endif
+}
+
+void ledOnAlways() {
+  digitalWrite(LED_PIN, LOW);
+}
+
+void ledOff() {
+  digitalWrite(LED_PIN, HIGH);
+}
+
+void showError(const char * errorMessage, int errorCode) {
+  for (int signalCounter = 0; signalCounter < 10; signalCounter++) {
+    Serial.print("Error: ");
+    Serial.print(errorMessage);
+
+    ledOnAlways();
+    delay(5000);
+    ledOff();
+    delay(1000);
+
+    for (int errorCodeCount = 0; errorCodeCount <= errorCode; errorCodeCount++) {
+      ledOnAlways();
+      delay(500);
+      ledOff();
+      delay(500);
+    }
+
+    Serial.println("");
+  }
+}
+
 IPAddress getBroadcastAddress() {
   IPAddress myAddress = WiFi.localIP();
 
@@ -61,13 +98,13 @@ void setup() {
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(100);
-    digitalWrite(LED_PIN, LOW);
+    ledOn();
     Serial.print(".");
     delay(100);
-    digitalWrite(LED_PIN, HIGH);
+    ledOff();
     secondsSinceBoot = millis() / 1000;
     if (secondsSinceBoot > secondsSinceBootToReboot) {
-      Serial.printf("\n\nNo WiFi found, rebooting...");
+      showError("No WiFi found", 1);
       ESP.restart();
     }
   }
@@ -99,7 +136,7 @@ void setup() {
     Serial.println("Started mDNS");
   }
   else {
-    Serial.println("Failed to start mDNS");
+    showError("Failed to start mDNS", 2);
   }
 
   ArduinoOTA.begin();
@@ -113,7 +150,7 @@ void loop() {
   ArduinoOTA.handle();
   
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Wifi disconnected, restarting...");
+    showError("WiFi connection lost, rebooting", 3);
     ESP.restart();
   }
 
@@ -122,24 +159,21 @@ void loop() {
 
   sendMessage(tempCelsius);
 
-#ifdef LED_BLINK
-  digitalWrite(LED_PIN, LOW);
-#endif
+  ledOn();
   delay(1000);
-
-#ifdef LED_BLINK
-  digitalWrite(LED_PIN, HIGH);
-#endif
+  ledOff();
   delay(1000);
 
 #ifdef INFLUX_DB
   if (!influxDbTalker->report("temp", tempCelsius)) {
     Serial.print("InfluxDB write failed: ");
     Serial.println(influxDbTalker->getLastErrorMessage());
+    showError("InfluxDB write error when reporting temp", 4);
   }
   if (!influxDbTalker->report("ipv4", WiFi.localIP().toString())) {
     Serial.print("InfluxDB write failed (reporting ipv4): ");
     Serial.println(influxDbTalker->getLastErrorMessage());
+    showError("InfluxDB write error when reporting IPv4", 5);
   }
 #endif
 
