@@ -112,6 +112,11 @@ void loop() {
   MDNS.update();
   ArduinoOTA.handle();
   
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Wifi disconnected, restarting...");
+    ESP.restart();
+  }
+
   // Reads temperature
   const float tempCelsius = temperatureSensor.getTemperatureCelsius();
 
