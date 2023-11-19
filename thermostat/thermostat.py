@@ -63,6 +63,8 @@ temp_indoor = temperature_message_listener.get_temperature(
     )
 if temp_indoor != None:
     logger.debug('Indoor temperature: %.2f' % temp_indoor)
+    if not influxdb.write_value('temp_indoor', temp_indoor):
+        logger.print(f'Could not write indoor temperature to InfluxDB server: {influxdb.last_error_message}')
 else:
     logger.print('Did not get indoor temperature')
 
@@ -72,6 +74,8 @@ temp_outdoor = temperature_message_listener.get_temperature(
     )
 if temp_outdoor != None:
     logger.debug('Outdoor temperature: %.2f' % temp_outdoor)
+    if not influxdb.write_value('temp_outdoor', temp_outdoor):
+        logger.print(f'Could not write outdoor temperature to InfluxDB server: {influxdb.last_error_message}')
 else:
     logger.print('Did not get outdoor temperature')
 
@@ -86,18 +90,25 @@ if nordpool is not None:
 
     price_rank = nordpool.get_current_price_rank()
     if price_rank is not None:
-        influxdb.write_value('nordpool_price_rank', price_rank)
+        if not influxdb.write_value('nordpool_price_rank', price_rank):
+            logger.print(f'Could not write NordPool price rank to InfluxDB server: {influxdb.last_error_message}')
     
     price_value = nordpool.get_current_price_value()
     if price_value is not None:
-        influxdb.write_value('nordpool_price', price_value)
+        if not influxdb.write_value('nordpool_price', price_value):
+            logger.print(f'Could not write NordPool price to InfluxDB server: {influxdb.last_error_message}')
+
 
 target_temp = temp_outdoor + temp_diff
 logger.debug('Target temperature: %.2f' % target_temp)
+if not influxdb.write_value('temp_target', target_temp):
+    logger.print(f'Could not write target temperature to InfluxDB server: {influxdb.last_error_message}')
 
 max_temp = None
 if settings.get_environ('THERMOSTAT_TEMP_MAX', False):
     max_temp = float(settings.get_environ('THERMOSTAT_TEMP_MAX', False))
+    if not influxdb.write_value('temp_max', max_temp):
+        logger.print(f'Could not write maximum temperature to InfluxDB server: {influxdb.last_error_message}')
 
 esp_commander = ESPCommander(
     settings.get_environ_as_list('RELAY_NAME', True),
@@ -106,31 +117,36 @@ esp_commander = ESPCommander(
 )
 
 relay_status = 'n/a'
+influxdb_write_success = True
+
 if (forced_relay_position == True):
     # Forced on
     esp_commander.relay_on()
     relay_status = 'ON (Forced)'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on-forced"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on-forced"])
 elif (forced_relay_position == False):
     # Forced off
     esp_commander.relay_off()
     relay_status = 'OFF (Forced)'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-forced"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-forced"])
 elif (max_temp is not None and temp_indoor > max_temp):
     # Max temp set and reached
     esp_commander.relay_off()
     relay_status = 'OFF (Over max)'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-over-max"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-over-max"])
 elif (target_temp < temp_indoor):
     # Too warm inside
     esp_commander.relay_off()
     relay_status = 'OFF'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off"])
 else:
     # Too cold inside
     esp_commander.relay_on()
     relay_status = 'ON'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on"])
+
+if not influxdb_write_success:
+    logger.print(f'Could not write relay status to InfluxDB: {influxdb.last_error_message}')
 
 influxdb.close()
 

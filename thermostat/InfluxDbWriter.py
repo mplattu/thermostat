@@ -1,4 +1,5 @@
 from influxdb_client import InfluxDBClient, Point
+from influxdb_client.rest import ApiException
 from influxdb_client .client.write_api import SYNCHRONOUS
 import certifi
 
@@ -43,7 +44,11 @@ class InfluxDbWriter:
         
         point = Point(self.name).field(legend, value)
 
-        self.write_api.write(bucket=self.influxdb_bucket, record=[point])
+        try:
+            self.write_api.write(bucket=self.influxdb_bucket, record=[point])
+        except ApiException as e:
+            self.last_error_message = f'write_value() got error from server: {e.reason} (#{e.status})'
+            return False
 
         return True
     

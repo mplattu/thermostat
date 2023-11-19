@@ -177,3 +177,10 @@ Start by enabling Local Mode from your device. This can be done in the BalenaClo
  * `balena push ADDRESS` pushes your local codebase to device, e.g. `balena push 7064e4d.local`
  * `sudo balena ssh ADDRESS MY-SERVICE` opens ssh connection inside the container.
    The default service name is `main`, e.g. `balena ssh 7064e4d.local main`
+
+## Publishing to production (Balena)
+
+ * Make sure you have installed `balena` CLI tool
+ * Get your fleet name from balenaCloud UI
+ * `balena login`
+ * `balena push <your fleet name>`
