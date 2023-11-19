@@ -86,11 +86,14 @@ if nordpool is not None:
 
     price_rank = nordpool.get_current_price_rank()
     if price_rank is not None:
-        influxdb.write_value('nordpool_price_rank', price_rank)
+        if not influxdb.write_value('nordpool_price_rank', price_rank):
+            logger.print(f'Could not write NordPool price rank to InfluxDB server: {influxdb.last_error_message}')
     
     price_value = nordpool.get_current_price_value()
     if price_value is not None:
-        influxdb.write_value('nordpool_price', price_value)
+        if not influxdb.write_value('nordpool_price', price_value):
+            logger.print(f'Could not write NordPool price to InfluxDB server: {influxdb.last_error_message}')
+
 
 target_temp = temp_outdoor + temp_diff
 logger.debug('Target temperature: %.2f' % target_temp)
@@ -106,31 +109,36 @@ esp_commander = ESPCommander(
 )
 
 relay_status = 'n/a'
+influxdb_write_success = True
+
 if (forced_relay_position == True):
     # Forced on
     esp_commander.relay_on()
     relay_status = 'ON (Forced)'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on-forced"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on-forced"])
 elif (forced_relay_position == False):
     # Forced off
     esp_commander.relay_off()
     relay_status = 'OFF (Forced)'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-forced"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-forced"])
 elif (max_temp is not None and temp_indoor > max_temp):
     # Max temp set and reached
     esp_commander.relay_off()
     relay_status = 'OFF (Over max)'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-over-max"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off-over-max"])
 elif (target_temp < temp_indoor):
     # Too warm inside
     esp_commander.relay_off()
     relay_status = 'OFF'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["off"])
 else:
     # Too cold inside
     esp_commander.relay_on()
     relay_status = 'ON'
-    influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on"])
+    influxdb_write_success = influxdb.write_value(influxdb_legend, INFLUXDB_RELAY_VALUES["on"])
+
+if not influxdb_write_success:
+    logger.print(f'Could not write relay status to InfluxDB: {influxdb.last_error_message}')
 
 influxdb.close()
 
