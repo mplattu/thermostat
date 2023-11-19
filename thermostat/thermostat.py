@@ -63,6 +63,8 @@ temp_indoor = temperature_message_listener.get_temperature(
     )
 if temp_indoor != None:
     logger.debug('Indoor temperature: %.2f' % temp_indoor)
+    if not influxdb.write_value('temp_indoor', temp_indoor):
+        logger.print(f'Could not write indoor temperature to InfluxDB server: {influxdb.last_error_message}')
 else:
     logger.print('Did not get indoor temperature')
 
@@ -72,6 +74,8 @@ temp_outdoor = temperature_message_listener.get_temperature(
     )
 if temp_outdoor != None:
     logger.debug('Outdoor temperature: %.2f' % temp_outdoor)
+    if not influxdb.write_value('temp_outdoor', temp_outdoor):
+        logger.print(f'Could not write outdoor temperature to InfluxDB server: {influxdb.last_error_message}')
 else:
     logger.print('Did not get outdoor temperature')
 
@@ -97,10 +101,14 @@ if nordpool is not None:
 
 target_temp = temp_outdoor + temp_diff
 logger.debug('Target temperature: %.2f' % target_temp)
+if not influxdb.write_value('temp_target', target_temp):
+    logger.print(f'Could not write target temperature to InfluxDB server: {influxdb.last_error_message}')
 
 max_temp = None
 if settings.get_environ('THERMOSTAT_TEMP_MAX', False):
     max_temp = float(settings.get_environ('THERMOSTAT_TEMP_MAX', False))
+    if not influxdb.write_value('temp_max', max_temp):
+        logger.print(f'Could not write maximum temperature to InfluxDB server: {influxdb.last_error_message}')
 
 esp_commander = ESPCommander(
     settings.get_environ_as_list('RELAY_NAME', True),
