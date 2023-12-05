@@ -6,7 +6,7 @@ import certifi
 from Logger import Logger
 
 class InfluxDbWriter:
-    def __init__(self, name, influxdb_url, influxdb_organisation, influxdb_bucket, influxdb_token):
+    def __init__(self, name, influxdb_url, influxdb_organisation, influxdb_bucket, influxdb_token, influxdb_ssl_cert_path=None):
         self.logger = Logger()
 
         self.client = None
@@ -19,7 +19,7 @@ class InfluxDbWriter:
             self.name = name
 
         if (influxdb_url != '' and influxdb_organisation != '' and influxdb_bucket != '' and influxdb_token != ''):
-            self.client = InfluxDBClient(url=influxdb_url, org=influxdb_organisation, token=influxdb_token, verify_ssl=False)
+            self.client = InfluxDBClient(url=influxdb_url, org=influxdb_organisation, token=influxdb_token, ssl_ca_cert=influxdb_ssl_cert_path)
             self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
             self.name = name

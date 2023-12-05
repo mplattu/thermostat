@@ -19,13 +19,18 @@ INFLUXDB_RELAY_VALUES = {
 logger = Logger()
 settings = Settings()
 
+influxdb_ssl_cert_path = None
+if os.path.isfile('cert.pem'):
+    influxdb_ssl_cert_path = 'cert.pem'
+
 # Define InfluxDB (if set)
 influxdb = InfluxDbWriter(
     "heating",
     settings.get_environ('INFLUXDB_URL'),
     settings.get_environ('INFLUXDB_ORG'),
     settings.get_environ('INFLUXDB_BUCKET'),
-    settings.get_environ('INFLUXDB_TOKEN')
+    settings.get_environ('INFLUXDB_TOKEN'),
+    influxdb_ssl_cert_path
 )
 influxdb_legend = "relay"
 

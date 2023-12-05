@@ -9,6 +9,10 @@ LOG=/var/log/thermostat.log
 # Start Thermostat script
 cd /srv/thermostat/thermostat
 
+if [ ! -z "$INFLUXDB_SSL_CERT_BASE64" ]; then
+  echo "$INFLUXDB_SSL_CERT_BASE64" | base64 --decode >cert.pem
+fi
+
 # Loop forever
 while [ 1 != 2 ]
 do

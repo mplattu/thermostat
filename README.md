@@ -129,6 +129,13 @@ InfluxDB.
  * `INFLUXDB_ORG` InfluxDB organisation. Type: string
  * `INFLUXDB_BUCKET` InfluxDB bucket. Type: string
  * `INFLUXDB_TOKEN` InfluxDB access token. The server needs write access to the given bucket. Type: string
+ * `INFLUXDB_SSL_CERT_BASE64` InfluxDB server SSL certificate chain. See below how to get this. Type: string
+
+To get the base64-encoded cert do following:
+ 1. Open your InfluxDB server with Firefox
+ 1. Click the lock icon (left of URL) > Connection secure > More information > View certificate > Download the certificate chain in PEM format as `cert.pem`
+ 1. `cat cert.pem | base64 -w0 >cert.b64`
+ 1. Copy `cert.b64` to `INFLUXDB_SSL_CERT_BASE64`
 
 Variables for testing and debugging:
 
@@ -184,3 +191,5 @@ Start by enabling Local Mode from your device. This can be done in the BalenaClo
  * Get your fleet name from balenaCloud UI
  * `balena login`
  * `balena push <your fleet name>`
+ * In balenaCloud UI go to the fleet > Summary and make Releases selection to point
+   to your latest release.
