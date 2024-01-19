@@ -1,4 +1,4 @@
-#define SENSOR_FW_VERSION "0.0.2"
+#define SENSOR_FW_VERSION "0.0.3"
 
 #include <OneWire.h>
 #include <ArduinoOTA.h>
@@ -217,7 +217,7 @@ void loop() {
   if (otaConf.deepSleepSeconds > 0 && loopCounter > 3) {
     Serial.print("Going to deep sleep for ");
     Serial.print(otaConf.deepSleepSeconds);
-    Serial.println("seconds...");
-    ESP.deepSleep(otaConf.deepSleepSeconds * 1000);
+    Serial.println(" seconds...");
+    ESP.deepSleep(otaConf.deepSleepSeconds * 1000000);
   }
 }
