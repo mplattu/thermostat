@@ -8,8 +8,6 @@ bool OtaConfiguration::updateConfiguration() {
     DynamicJsonDocument doc(512);
     deserializeJson(doc, payload);
 
-    Serial.printf("http content: %s\n", payload.c_str());
-
     if (doc.containsKey("sensorName")) {
         sensorName = String(doc["sensorName"].as<const char *>());
     } else {
