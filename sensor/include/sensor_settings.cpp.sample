@@ -2,14 +2,17 @@
 //  * broadcasting the temperature
 //  * mDNS name SERVER_NAME.local
 //  * communicating to InfluxDB server
+// This value can be set with OTA DRIVE configuration parameter "sensorName"
 const char *SENSOR_NAME = "Sensor X";
 
 // Set this only in case you use InfluxDB
+// This value can be set with OTA DRIVE configuration parameter "influxDbToken"
 const char *INFLUXDB_TOKEN = "influxdb-token-for-this-device";
 
 // Set this to non-zero if you want to set deep sleep timer
-const unsigned int DEEP_SLEEP_MICROSECONDS = 0;
-//const unsigned int DEEP_SLEEP_MICROSECONDS = 60e6;    // 60 seconds
+// This value can be set with OTA DRIVE configuration parameter "deepSleepSeconds"
+const unsigned int DEEP_SLEEP_SECONDS = 0;
+//const unsigned int DEEP_SLEEP_SECONDS = 60;
 
 // Set your sensor timezone for NTP connection
 // This is required if your server connections are secured (https)
@@ -17,5 +20,10 @@ const unsigned int DEEP_SLEEP_MICROSECONDS = 0;
 // Timezone strings: https://www.gnu.org/software/libc/manual/html_node/TZ-Variable.html
 //#define TZ_INFO "UTC+2"
 
-// Set this if you want to blink internal LED
-#define LED_BLINK
+// Set this to non-zero if you want to blink internal LED
+// This value can be set with OTA DRIVE configuration parameter "ledBlink"
+#define LED_BLINK 1
+
+// Set this to your OTA DRIVE API KEY if you want to get configurations
+// from OTA DRIVE service. Using OTA DRIVE disables regular ArduinoOTA.
+//#define OTA_DRIVE_APIKEY "49b84326-b60d-431b-aecc-5dc31d26352"

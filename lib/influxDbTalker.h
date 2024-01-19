@@ -3,7 +3,6 @@
 
 #include <ESP8266HTTPClient.h>
 #include <InfluxDbClient.h>
-InfluxDBClient influxDbClient(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN);
 
 #ifdef SENSOR_NAME
 Point influxDbSensor(SENSOR_NAME);

@@ -36,6 +36,11 @@ Wemos D1   DS18B20
 Building:
  1. Configure your sensor by editing `include/settings.cpp` and `sensor/include/settings.cpp` (get the templates from `settings.cpp.sample` files).
     The best practice is to create sensor-specific file `sensor/include/settings_mysensor.cpp` and activate this with `sensor/set_current_sensor.sh`.
+    
+    By using OTA DRIVE cloud service you can set only the `OTA_DRIVE_APIKEY` value in the
+    `sensor/include/settings.cpp` and download rest values from the service. This way you can set all
+    device-specific values as an OTA DRIVE configuration and use same firmware for all your sensors.
+
  1. Build, upload and execute the firmware:
     ```
     cd sensor
@@ -61,6 +66,36 @@ Building:
 In case of error the internal led is on for 5 seconds. After this it shows the error
 code with 0,5 second blinks. See `grep showError sensor/src/sensor.cpp` for error
 codes.
+
+### Configuration and OTA Update Using OTA DRIVE
+
+OTA DRIVE is an cloud service for updating and configuring MCUs. Temperature sensors
+can be updated and configured through the service.
+
+ * In `include/settings.cpp` set the `OTA_DRIVE_APIKEY` which you get from your
+   OTA DRIVE product.
+ * Set following JSON to the default configuration:
+   ```
+   {
+    "sensorName": "<!--not-set-->",
+    "influxDbToken": "<!---->",
+    "deepSleepSeconds": "<!--300-->",
+    "ledBlink": "<!--1-->"
+   }
+   ```
+ * Add new devices one by one. This way you can add individual sensor names and
+   InfluxDB tokens for each device from the device settings.
+ * Precedence of the values:
+   1. OTA DRIVE device-specific values
+   1. OTA DRIVE default values
+   1. firmware values from `sensor/include/settings.cpp`
+
+To deploy a new firmware version
+ * Update `SENSOR_FW_VERSION` string in the top of `sensor/src/sensor.cpp`
+ * In `sensor/`, run `make build` to build the new firmware
+ * Upload `.pio/build/wemosd1/firmware.bin` to OTA DRIVE
+ * Assign the new version to your device group
+ * Enjoy monitoring successfull upgrades
 
 ## Configuration
 

@@ -1,8 +1,16 @@
+#define SENSOR_FW_VERSION "0.0.2"
+
 #include <OneWire.h>
 #include <ArduinoOTA.h>
 
 #include "../../include/settings.cpp"
 #include "../include/sensor_settings.cpp"
+
+#ifdef OTA_DRIVE_APIKEY
+#include <otadrive_esp.h>
+#include "../include/otaConfiguration.cpp"
+OtaConfiguration otaConf;
+#endif
 
 #ifdef INFLUX_DB
   #include <ESP8266WiFiMulti.h>
@@ -28,11 +36,12 @@ IPAddress broadcastAddress;
 #define LED_PIN LED_BUILTIN
 
 void ledOn() {
-#ifdef LED_BLINK
-  digitalWrite(LED_PIN, LOW);
-#else
-  digitalWrite(LED_PIN, HIGH);
-#endif
+  if (otaConf.ledBlink > 0) {
+    digitalWrite(LED_PIN, LOW);
+  }
+  else {
+    digitalWrite(LED_PIN, HIGH);
+  }
 }
 
 void ledOnAlways() {
@@ -73,7 +82,7 @@ IPAddress getBroadcastAddress() {
 }
 
 void sendMessage(float temperature) {
-  String message = String(SENSOR_NAME) + ":" + String(temperature);
+  String message = otaConf.sensorName + ":" + String(temperature);
   Serial.printf("Sending message: '%s'\n", message.c_str());
 
   char messageStr[message.length()+1];
@@ -125,21 +134,42 @@ void setup() {
   Serial.print("Broadcast address: ");
   Serial.println(broadcastAddress);
 
-#ifdef INFLUX_DB
-  Serial.print("Initialising InfluxDbTalker...");
-  influxDbTalker = new InfluxDbTalker(SENSOR_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
-  influxDbTalker->begin();
+#ifdef OTA_DRIVE_APIKEY
+  Serial.print("Initialising OTA DRIVE...");
+  OTADRIVE.setInfo(OTA_DRIVE_APIKEY, SENSOR_FW_VERSION);
   Serial.println("OK");
+
+  auto inf = OTADRIVE.updateFirmwareInfo();
+  if (inf.available) {
+    Serial.print("New OTA DRIVE version available: ");
+    Serial.println(inf.version.c_str());
+    Serial.print("Updating...");
+    OTADRIVE.updateFirmware();
+    Serial.println("OK");
+  }
+
+  Serial.print("Getting OTA DRIVE configuration...");
+  otaConf = OtaConfiguration();
+  otaConf.updateConfiguration();
+  Serial.println("OK");
+#else
+  ArduinoOTA.begin();
 #endif
 
-  if (MDNS.begin(SENSOR_NAME)) {
-    Serial.println("Started mDNS");
+  if (MDNS.begin(otaConf.sensorName)) {
+    Serial.print("Started mDNS: ");
+    Serial.println(otaConf.sensorName);
   }
   else {
     showError("Failed to start mDNS", 2);
   }
 
-  ArduinoOTA.begin();
+#ifdef INFLUX_DB
+  Serial.print("Initialising InfluxDbTalker...");
+  influxDbTalker = new InfluxDbTalker(otaConf.sensorName.c_str(), INFLUXDB_URL, otaConf.influxDbToken.c_str(), INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
+  influxDbTalker->begin();
+  Serial.println("OK");
+#endif
 }
 
 // the loop function runs over and over again forever
@@ -147,7 +177,9 @@ unsigned int loopCounter = 0;
 
 void loop() {
   MDNS.update();
+#ifndef OTA_DRIVE_APIKEY
   ArduinoOTA.handle();
+#endif
   
   if (WiFi.status() != WL_CONNECTED) {
     showError("WiFi connection lost, rebooting", 3);
@@ -179,8 +211,13 @@ void loop() {
 
   loopCounter++;
 
-  if (DEEP_SLEEP_MICROSECONDS > 0 && loopCounter > 3) {
-    Serial.println("Going to deep sleep...");
-    ESP.deepSleep(DEEP_SLEEP_MICROSECONDS);
+  Serial.print("Deep sleep seconds: ");
+  Serial.println(otaConf.deepSleepSeconds);
+
+  if (otaConf.deepSleepSeconds > 0 && loopCounter > 3) {
+    Serial.print("Going to deep sleep for ");
+    Serial.print(otaConf.deepSleepSeconds);
+    Serial.println("seconds...");
+    ESP.deepSleep(otaConf.deepSleepSeconds * 1000);
   }
 }
