@@ -36,12 +36,19 @@ IPAddress broadcastAddress;
 #define LED_PIN LED_BUILTIN
 
 void ledOn() {
+#ifdef LED_BLINK
+  digitalWrite(LED_BLINK, LOW);
+  return;
+#endif
+
+#ifdef OTA_DRIVE_APIKEY
   if (otaConf.ledBlink > 0) {
     digitalWrite(LED_PIN, LOW);
   }
   else {
     digitalWrite(LED_PIN, HIGH);
   }
+#endif
 }
 
 void ledOnAlways() {
@@ -82,7 +89,11 @@ IPAddress getBroadcastAddress() {
 }
 
 void sendMessage(float temperature) {
+#ifdef OTA_DRIVE_APIKEY
   String message = otaConf.sensorName + ":" + String(temperature);
+#else
+  String message = String(SENSOR_NAME) + ":" + String(temperature);
+#endif
   Serial.printf("Sending message: '%s'\n", message.c_str());
 
   char messageStr[message.length()+1];
@@ -156,17 +167,28 @@ void setup() {
   ArduinoOTA.begin();
 #endif
 
+#ifdef OTA_DRIVE_KEY
   if (MDNS.begin(otaConf.sensorName)) {
     Serial.print("Started mDNS: ");
     Serial.println(otaConf.sensorName);
   }
+#else
+  if (MDNS.begin(SENSOR_NAME)) {
+    Serial.print("Started mDNS: ");
+    Serial.println(SENSOR_NAME);
+  }
+#endif
   else {
     showError("Failed to start mDNS", 2);
   }
 
 #ifdef INFLUX_DB
   Serial.print("Initialising InfluxDbTalker...");
-  influxDbTalker = new InfluxDbTalker(otaConf.sensorName.c_str(), INFLUXDB_URL, otaConf.influxDbToken.c_str(), INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
+  #ifdef OTA_DRIVE_APIKEY
+    influxDbTalker = new InfluxDbTalker(otaConf.sensorName.c_str(), INFLUXDB_URL, otaConf.influxDbToken.c_str(), INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
+  #else
+    influxDbTalker = new InfluxDbTalker(SENSOR_NAME, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_CERT_SHA1_FINGERPRINT);
+  #endif
   influxDbTalker->begin();
   Serial.println("OK");
 #endif
@@ -211,13 +233,18 @@ void loop() {
 
   loopCounter++;
 
-  Serial.print("Deep sleep seconds: ");
-  Serial.println(otaConf.deepSleepSeconds);
+#ifdef OTA_DRIVE_APIKEY
+  int deepSleepSeconds = otaConf.deepSleepSeconds;
+#else
+  int deepSleepSeconds = DEEP_SLEEP_MICROSECONDS;
+#endif
 
-  if (otaConf.deepSleepSeconds > 0 && loopCounter > 3) {
+  Serial.print("Deep sleep seconds: ");
+  Serial.println(deepSleepSeconds);
+  if (deepSleepSeconds > 0 && loopCounter > 3) {
     Serial.print("Going to deep sleep for ");
-    Serial.print(otaConf.deepSleepSeconds);
+    Serial.print(deepSleepSeconds);
     Serial.println(" seconds...");
-    ESP.deepSleep(otaConf.deepSleepSeconds * 1000000);
+    ESP.deepSleep(deepSleepSeconds * 1000000);
   }
 }
