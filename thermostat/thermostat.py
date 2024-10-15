@@ -86,7 +86,11 @@ else:
 
 temp_diff = float(settings.get_environ('THERMOSTAT_TEMP_DIFF', True))
 if nordpool is not None:
-    nordpool.update_nordpool_data()
+    try:
+        nordpool.update_nordpool_data()
+    except Exception as e:
+        logger.print(f'Could not update Nordpool data: {e}')
+
     if nordpool.is_cheap(int(settings.get_environ('NORDPOOL_HOURS'))):
         temp_diff = float(settings.get_environ('THERMOSTAT_TEMP_DIFF_CHEAP', True))
         logger.debug(f'Nord Pool: using cheap hours temp diff {temp_diff}')
