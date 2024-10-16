@@ -1,4 +1,4 @@
-FROM balenalib/%%BALENA_ARCH%%-debian-python:3.8-bullseye
+FROM balenalib/%%BALENA_ARCH%%-debian-python:3.10-bookworm
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends \
   dbus \
@@ -21,7 +21,7 @@ RUN apt-get install -y --no-install-recommends \
   python3-async-timeout \
   python3-cryptography \
   libffi-dev
-RUN /usr/local/bin/python3.8 -m pip install --upgrade pip
+RUN /usr/local/bin/python3.10 -m pip install --upgrade pip
 COPY requirements.txt /srv/thermostat/requirements.txt
 RUN pip3 install -r /srv/thermostat/requirements.txt
 COPY start-thermostat.sh /srv/thermostat/start-thermostat.sh
