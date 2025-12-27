@@ -172,6 +172,15 @@ To get the base64-encoded cert do following:
  1. `cat cert.pem | base64 -w0 >cert.b64`
  1. Copy `cert.b64` to `INFLUXDB_SSL_CERT_BASE64`
 
+Alternatively, you can supply the certificate chain without the server certificate. This is an excellent option if you are using short-term
+certificate (e.g. Let's Encrypt certificates).
+ * Open your InfluxDB server with Firefox
+ * Click the lock icon (left of URL) > Connection secure > More information > View certificate > Check the certificate chain, e.g.
+   `ISRG Root X1` > `R12` > `your-server.com`
+ * Go to CA web pages (e.g. [Let's Encrypt](https://letsencrypt.org/certificates/)) and download all certificates in the chain
+ * Merge the certificates: `cp intermed.pem root.pem >chain.pem`
+ * Use the `chain.pem` as documented above
+
 Variables for testing and debugging:
 
 To run Thermostat without real temperature sensors set `SENSOR_INDOOR` and `SENSOR_OUTDOOR` to
